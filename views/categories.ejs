@@ -1,0 +1,100 @@
+<%- include("partials/admin-header.ejs") %>
+
+<div class="category-div">
+  <h2 class="category-title">Category Management</h2>
+  <div>
+
+  <table class="table category-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Category Name</th>
+        
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.data){ %>
+        <% if(data.length>1){%>
+      <% data.forEach(d=>{ %>
+      
+      <tr>
+        
+        <td><img src="<%= d.image %>" class="category-img"></td>
+        <td><%= d.name %></td>
+        
+        
+        <td>
+          <form id="delete-category-form">
+            <input type="hidden" id="categoryId" name="categoryId" value="<%= d._id %>">
+            <button class="table-button" type="submit">Delete</button>
+          </form>
+        </td>  
+        <td>
+          <form action="/admin/categories/update-category" METHOD="GET">
+          <input type="hidden"  name="categoryId" value="<%= d._id %>">
+          <button class="table-button" type="submit">Update</button>
+          </form>
+        </td>
+        
+      </tr> 
+      
+<% })%> 
+<% }}%> 
+</div> 
+
+<div>
+  <a href="/admin/categories/add-category">
+  <button class="add-button" >Add New Category</button>  
+  </a>
+</div>
+
+<script>
+
+  const deleteCategoryForms = document.querySelectorAll("#delete-category-form");
+  deleteCategoryForms.forEach((categoryForm)=>{
+    categoryForm.addEventListener("submit",(event)=>{
+      event.preventDefault();
+      const categoryId = categoryForm.querySelector("#categoryId").value;
+      console.log(categoryId);
+      deleteCategory(categoryId) 
+    })
+  })
+
+  //delete product function
+  async function deleteCategory(categoryId) {
+    event.preventDefault();
+    const storedToken = localStorage.getItem('bearerToken');
+    
+
+    try {
+      const response = await fetch('/admin/categories/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${storedToken}`
+        },
+        body: JSON.stringify({
+          categoryId,
+         
+        })
+      });
+
+      if (response.ok) {
+        // Handle success
+        window.location.href = '/admin/categories';
+      } else {
+        // Handle failure
+        console.error('Failed to delete category');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  
+</script>
+
+</body>
+</html>

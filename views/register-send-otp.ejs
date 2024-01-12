@@ -1,0 +1,134 @@
+<%- include("partials/basic-header.ejs") %>
+<body>
+  <div class="container mt-5 mb-5">
+    
+
+    <div class="row  outer-body">
+      <div class="col-sm-8">
+        <div class="card register-body">
+          <div class="card-body ">
+
+            <h2 class="login-title">Digi Tech.</h2>
+
+           
+            <p class="error-message" id="message">
+              <% if(locals.message) {%>
+              <%= message %>
+              <% } %>
+              </p>
+          <form onsubmit="validateOtp()">
+          
+                <div class="form-group">
+                  <p class="message">Your code was sent to you via email</p>
+                  <p><span id="timer"></span></p>
+                  <input type="text" class="form-control" id="otp" placeholder="OTP">  
+                </div>      
+                </div>
+               <div class="otp-button-div">
+                <div>
+                  <button class="resend-button" id="resend-button" onclick="resendOtp(); event.preventDefault();" disabled>Resend</button>
+                </div>
+                <div>
+               <button type="submit" class="btn submit-button">Verify</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+ 
+
+  
+  <script>
+startTimer(10);
+ 
+
+async function validateOtp() {
+  
+  const message = document.getElementById('message').value;
+    
+    const otp = document.getElementById('otp').value;
+   
+      try {
+        const response = await fetch('/users/register/send-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',  
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            
+            otp
+          })
+        })
+        
+      
+      if (response.ok) {
+                
+                window.location.href = '/products';
+        } else {
+          // Handle failure
+          const responseData = await response.json();
+          const errorMessage = responseData.message || 'OTP verification failed';
+          document.getElementById('message').innerHTML = errorMessage;
+          
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+
+
+    function startTimer(duration){
+      let timer = duration;
+      countdown = setInterval(function(){
+        const minutes = Math.floor(timer/60);
+        const seconds = timer % 60;
+        document.getElementById('timer').innerHTML = `Resend in ${minutes}:${timer}`;
+        if(--timer<=0){
+          stopTimer();
+        }
+      },1000)
+    }
+
+    function stopTimer(){
+      clearInterval(countdown);
+      document.getElementById('timer').innerHTML = '';
+      document.getElementById('resend-button').disabled = false;
+    }
+
+    async function resendOtp(){
+      document.getElementById('resend-button').disabled = true;
+      
+      try{
+      const response = await fetch('/users/resend-otp',{
+        method:'POST',
+    })
+
+    if(response.ok){
+      clearInterval(countdown);
+      startTimer(30);
+    }
+    else {
+          // Handle failure
+          const responseData = await response.json();
+          const errorMessage = responseData.message || 'OTP verification failed';
+          document.getElementById('message').innerHTML = errorMessage;
+          
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+
+    
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<%- include("partials/basic-header.ejs") %>
+<body>
+  <div class="container mt-5">
+    <h4 class="login-title">Update Category</h4>
+    <div>
+      <p class="error-message" id="message">
+        <% if(locals.message) {%>
+        <%= message %>
+        <% } %>
+        </p>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="card">
+          <div class="card-body">
+
+
+            <form  enctype="multipart/form-data"  id="category-update-form">
+              <input type="hidden" name="categoryId" value = "<%= item._id %>" id="categoryId">
+              
+              <div  class="form-group">
+                <label for="name">Category Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Category Name" value = "<%= item.name %>">
+              </div>
+              
+              <p class="image-title">Image Preview</p>
+              <div class="image-preview-container">
+                
+                <img class="image-preview" src="<%= item.image %>">
+              </div>
+              
+
+                
+              <div class="mb-3">
+                <label for="image" class="form-label">Upload New Image</label>
+                <input class="form-control  col-md-6" type="file" accept="png,jpg,jpeg" id="image" >
+              </div>
+              <button type="submit" class="btn submit-button">Update</button>
+            </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    
+    const updateForm = document.getElementById("category-update-form");
+    updateForm.addEventListener("submit",function(event){
+      event.preventDefault();
+      updateCategory();
+    })
+    
+
+  
+    
+    
+  
+    async function updateCategory() {
+      event.preventDefault();
+      const storedToken = localStorage.getItem('bearerToken');
+      const formData = new FormData();
+      const name = document.getElementById("name").value;
+      const categoryId = document.getElementById("categoryId").value;
+      if(document.getElementById("image").files[0]){
+      const image = document.getElementById("image").files[0];
+      formData.append('image',image);
+      }
+      
+     
+     
+      
+      formData.append('name',name);
+      formData.append('categoryId',categoryId);
+      
+      
+      try {
+        const response = await fetch('/admin/categories/update-category', {
+          method: 'POST',
+          headers: {
+            
+            'Authorization': `Bearer ${storedToken}`
+          },
+          body:formData,
+        });
+  
+        if (response.ok) {
+          // Handle success
+          window.location.href = '/admin/categories';
+        } else {
+          // Handle failure
+          const responseData = await response.json();
+          const errorMessage = responseData.message || '';
+          document.getElementById("message").innerHTML = errorMessage;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>

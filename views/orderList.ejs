@@ -1,0 +1,64 @@
+<%- include("partials/admin-header.ejs") %>
+
+<div class="user-div">
+  <h2 class="user-title">User Management</h2>
+  <div>
+
+  <table class="table user-table">
+    <thead>
+      <tr>
+        
+        <th>Order Number</th>
+        <th>Ordered Date</th>
+        <th>Current Status</th>
+        <th>Select New Status</th>
+        <th></th>
+        <th></th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.orders){%>
+      <% orders.forEach(order=>{ %>
+      
+      <tr>
+        
+        <td>#<%= order.orderNumber %></td>
+        <td><%= order.dateOrdered.toDateString() %></td>
+        <td class="mystatus"><%= order.status%></td>
+        
+
+        
+        <td>
+          <form id="change-status-form" >
+            <input type="hidden" name="orderId" id= "orderId" value="<%= order._id %>">
+
+            <select name="newStatus" id="newStatus" class="status-dropdown">
+              <option value="" disabled selected>Select Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Shipped">Shipped</option>
+            </select>
+            <td>
+            <button class="table-button status" id = "status" type="submit">Change Status</button>
+            </td>
+          </form>
+        </td>  
+
+          <td>
+            <form id="cancel-form">
+              <input type="hidden" id="orderId" name="userId" value="<%= order._id %>">
+              <button class="table-button" id = "status" type="submit">Cancel</button>
+            </form>
+          </td>  
+        
+      </tr> 
+      
+<% })%> 
+<% }%> 
+</div> 
+
+<script src="/js/orderList.js"></script>
+
+</body>
+</html>

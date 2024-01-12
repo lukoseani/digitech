@@ -1,0 +1,148 @@
+<%- include("partials/header.ejs") %>
+<body>
+  <div class="container mt-5 mb-5">
+    <div class="row  outer-body">
+      <div class="col-sm-8">
+        <div class="card register-body">
+          <div class="card-body ">
+
+            <h2 class="profile-title">Your Profile</h2>
+            <div class="confirm-details">
+              <div class="profile">
+              <div class="profile-field">Name</div>
+              <div><%= user.name %></div>
+              </div>
+              
+              <div class="profile">
+                <div><span class="profile-field">Contact Info</span></div>
+                <div></div>
+            </div>
+
+
+            <div class="profile">
+              <div>Email<br>Phone</div>
+              <div><%= user.email %><br><%= user.phone %></div>
+              <div><a class="address-button" href="/users/edit-user">Edit</a></div>
+            </div>
+              
+          </div>
+
+            <div class="profile">
+              <div class="profile-field">Address</div>
+              <div>
+              <% if(locals.user.address){ %>
+              <%= user.address.unit %> <%= user.address.addressLine1%> <%= user.address.addressLine2 %><br>
+              <%= user.address.city %> <%= user.address.province %><br> <%= user.address.postalcode %>
+              
+            </div>
+              <div><a class="address-button" href="/users/address">Edit</a></div>
+              <% }else{%>
+                </div>
+                <div><a class="address-button" href="/users/address">Add</a></div>
+                <% } %>
+              </div>
+
+              <div class="profile">
+                <div class="profile-field">Update Password</div>
+                <div></div>
+                <div><a class="address-button" href="/users/get-password-form">Update</a></div>
+              </div>
+
+
+              
+              <div class="profile-field">Order History</div>
+              
+              <% if(locals.message) {%>
+                <div style="color:green"><%= message %></div>
+                <% } %>
+              <% if(locals.items){%>
+                
+                <% items.forEach(item=>{%>
+                  <% if(item.status != 'cancelled'){ %>
+                  <div class="order-grid">
+                  <div class="order-div">Order #<%= item.orderNumber %></div>
+                  <div class="order-div"><%= item.dateOrdered.toDateString() %></div>
+                  <input type="hidden" class="itemId" value="<%= item._id %>">
+                  <div><button  class="cancel-button" data-itemid="<%= item._id %>">Cancel</button></div>
+                </div>
+              
+                  <% item.cartItems.forEach(cartItem=>{ %>
+                <div class="item">
+                  <% if (cartItem.product && cartItem.product.image) { %>
+                  <div ><img class="item-image" src="<%= cartItem.product.image %>"></div>
+                  <div>
+                    <p class="item-name"><%= cartItem.product.name %></p>
+                    <% } %>
+                    <p class="qty">Qty: <%= cartItem.quantity %></p>
+                    <p class="qty"><%= item.status %></p>
+                    
+                  </div>
+                  
+                </div>
+                
+                <% }) %>
+                <% } %>
+                <% }) %>
+                <% } %>
+              
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <script>
+
+  const cancelButtons = document.querySelectorAll(".cancel-button");
+
+  cancelButtons.forEach(cancelButton=>{
+    
+    cancelButton.addEventListener("click",function(event){
+      event.preventDefault();
+      const itemId = cancelButton.getAttribute("data-itemid")
+      
+
+      
+        cancelOrder(itemId);
+      
+     
+      
+      
+     
+  })
+  
+  })
+  async function cancelOrder(orderId) {
+    
+    const confirm = window.confirm(`Are you sure want to cancel this order`);
+    if(confirm){
+      try{
+        const response = await fetch('/cart/cancel-order',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId,
+         
+        })
+      })
+
+      if(response.ok){
+        const responseData = await response.json();
+        const message = responseData.message;
+        window.alert(message);
+        window.location.href = '/users/profile';
+      }
+      }
+      catch(error){
+        console.log(error);
+      }
+    }
+  }
+
+ </script>
+
+</body>
+</html>

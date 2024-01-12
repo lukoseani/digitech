@@ -1,0 +1,45 @@
+<%- include("partials/header.ejs") %>
+  <title>Products</title>
+  </head>
+
+  <body>
+    
+    <h1 class="product-details-title">Product Details</h1>
+
+
+
+    <div class="products-details-grid">
+      <div class="image-details-div">
+        <img src="<%= item.image %>" class="product-details-img">
+      </div>
+      <div class="product-description">
+        <div class="product-name">
+          Name: <%= item.name %>
+        </div>
+        <div class="product-name">
+          Brand:<%= item.brand %>
+        </div>
+        <div class="product-name">
+          Product Price:$<%= item.price %>
+        </div>
+        <div class="button-div" >
+          <button  id="myAddToCart" class="btn  details-button" type="button">Add to cart</button>
+        </div>
+        <input type="hidden" name="productId" id="productId" value="<%= item._id %>">
+      </div>
+
+    
+    </div>
+    <div class="images">
+      <% item.images.forEach(image=>{%>
+        <div><img src="<%= image %>" class="product-details-imgs"></div>
+        <%}) %>
+    </div>
+
+    
+<script src="/js/product-details.js">
+   
+</script>
+  </body>
+
+  </html>

@@ -1,0 +1,146 @@
+body{
+  margin:0;
+  padding:0;
+  color:rgb(106, 4, 109);
+}
+
+.admin-menu-style{
+  width: 240px;
+  height:100%;
+  background-color:rgb(232, 229, 229);
+  bottom:0;
+  left:0;
+  position:fixed;
+}
+
+.brand-name{
+  font-size:24px;
+}
+
+.menu-flex{
+  margin: 20px;
+  display:grid;
+  grid-template-rows:100px 1fr;
+}
+
+.admin-logout{
+  position:fixed;
+  bottom:0;
+}
+
+
+
+.admin-menu{
+  display:grid;
+  grid-template-rows: 50px 50px 50px 50px;
+}
+
+.product-div,.category-div,.user-div,.salesReportDiv{
+  position:absolute;
+  left:240px;
+  top:0;
+  right:0;
+  bottom:0;
+  background-color:rgb(134, 109, 134);
+  padding-left:30px;
+  padding-right:30px;
+}
+
+.salesReport{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: 80px;
+  margin:40px;
+  padding:60px;
+  background-color: white;
+  
+}
+.sales{
+  border: solid 2px rgb(134, 109, 134);
+  border-radius:4px;
+  padding:30px;
+}
+
+.product-table,.category-table,.user-table{
+  margin-top:50px;
+  
+  
+}
+.product-title,.sales-title,.category-title,.user-title{
+  margin-top:16px;
+  color:white;
+  font-size:24px;
+}
+
+.table-button{
+  background-color: rgb(106, 4, 109);
+  color:white;
+  border:none;
+  border-radius:4px;
+  padding-left:8px;
+  padding-right:8px;
+  
+}
+
+.product-img,.category-img{
+  width:36px;
+}
+
+.add-button{
+  background-color: white;
+  color:rgb(68, 3, 70);
+  border-radius:4px;
+  padding:5px;
+  position:absolute;
+  top:30px;
+  right:30px;
+  border:none;
+}
+
+.login-button{
+  background-color: rgb(85, 10, 85);
+  color:white;
+  border:none;
+  border-radius:4px;
+  padding-left:16px;
+  padding-right:16px;
+  
+}
+
+.delete-image{
+  color:red;
+  margin-left: 8px;
+  border:none;
+  background-color: white;
+  cursor: pointer;
+}
+
+.image-preview-container{
+  height :100px;
+  width:100px;
+  margin-bottom: 18px;
+}
+.image-preview{
+  height :60px;
+  
+  
+}
+.status-class{
+  color: green;
+}
+.cancelled{
+  color:red;
+}
+
+.images-flex{
+  display:flex;
+  
+}
+
+.image-title{
+margin-top:12px;
+margin-bottom:12px;
+}
+

@@ -1,0 +1,108 @@
+<%- include("partials/admin-header.ejs") %>
+
+<div class="user-div">
+  <h2 class="user-title">User Management</h2>
+  <div>
+
+  <table class="table user-table">
+    <thead>
+      <tr>
+        
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th></th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.customers){%>
+      <% customers.forEach(customer=>{ %>
+      
+      <tr>
+        
+        <td><%= customer.name %></td>
+        <td><%= customer.email %></td>
+        <% if(!customer.isBlocked){ %>
+        <td>Active</td>
+        
+
+        
+        <td>
+          <form id="block-form">
+            <input type="hidden" id="userId" name="userId" value="<%= customer._id %>">
+            <button class="table-button status" id = "status" type="submit" value="block">Block</button>
+          </form>
+        </td>  
+
+        <% } else{%>
+          <td>Blocked</td>
+          <td>
+            <form id="block-form">
+              <input type="hidden" id="userId" name="userId" value="<%= customer._id %>">
+              <button class="table-button" id = "status" value = "unblock" type="submit">unblock</button>
+            </form>
+          </td>  
+          <% } %>
+        
+      </tr> 
+      
+<% })%> 
+<% }%> 
+</div> 
+
+<script>
+
+  const blockForms = document.querySelectorAll("#block-form");
+  
+  blockForms.forEach((blockForm)=>{
+    blockForm.addEventListener("submit",(event)=>{
+      event.preventDefault();
+      const userId = blockForm.querySelector("#userId").value;
+      blockUser(userId);
+    })
+  })
+
+  //delete product function
+  async function blockUser(userId) {
+    event.preventDefault();
+    const status = document.getElementById("status").innerHTML;
+    const confirm = window.confirm(`Are you sure want to update user status?`);
+    const storedToken = localStorage.getItem('bearerToken');
+    
+   if(confirm){
+    try {
+      const response = await fetch('/admin/users/blockUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${storedToken}`
+        },
+        body: JSON.stringify({
+          userId,
+         
+        })
+      });
+
+      if (response.ok) {
+        // Handle success
+        window.location.href = '/admin/users';
+      } else {
+        // Handle failure
+        console.error('Failed to update user status');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  }
+
+
+
+
+
+  
+</script>
+
+</body>
+</html>

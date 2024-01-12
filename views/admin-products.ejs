@@ -1,0 +1,106 @@
+<%- include("partials/admin-header.ejs") %>
+
+  <div class="product-div">
+    <h2 class="product-title">Product Management</h2>
+    <div>
+
+    <table class="table product-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Item Name</th>
+          <th>Stock</th>
+          <th>Price</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.forEach(item=>{ %>
+        <tr>
+          
+          <td><img src="<%= item.image %>" class="product-img"></td>
+          <td><%= item.name %></td>
+          <td><%= item.countInStock %></td>
+          <td>$<%= item.price %></td>
+          <td>
+            <form id="delete-product-form">
+              <input type="hidden" name="productId" value="<%= item._id %>" id="product-id">
+              <button class="table-button" type="submit">Delete</button>
+            </form>
+          </td>  
+          <td>
+            <form action="/admin/update-product" METHOD="GET">
+            <input type="hidden" name="productId" value="<%= item._id %>">
+            <button class="table-button" type="submit">Update</button>
+            </form>
+          </td>
+          
+        </tr> 
+        
+  <% })%> 
+</div>    
+
+  <div>
+    <a href="/admin/add-product">
+    <button class="add-button" >Add New Product</button>  
+    </a>
+  </div>
+
+    
+  </div>
+
+  <script>
+
+    const deleteProductForms = document.querySelectorAll("#delete-product-form");
+    deleteProductForms.forEach(form=>{
+      form.addEventListener("submit",function(event){
+        const productId = form.querySelector("#product-id").value;
+        console.log(productId);
+        deleteProduct(event,productId);
+    })
+    })
+    
+
+    //delete product function
+    async function deleteProduct(event,productId) {
+      event.preventDefault();
+      const storedToken = localStorage.getItem('bearerToken');
+      console.log(productId);
+      console.log(storedToken);
+  
+      try {
+        const response = await fetch('/admin/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${storedToken}`
+          },
+          body: JSON.stringify({
+            productId,
+           
+          })
+        });
+  
+        if (response.ok) {
+          // Handle success
+          window.location.href = '/admin/products';
+        } else {
+          // Handle failure
+          console.error('Failed to delete product');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    
+  </script>
+
+  
+
+
+
+
+</body>
+</html>

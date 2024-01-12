@@ -1,0 +1,90 @@
+<%- include("partials/basic-header.ejs") %>
+<body>
+  <div class="container mt-5">
+    <h4 class="login-title">Add New Product</h4>
+    <div>
+      <p class="error-message" id="message">
+        <% if(locals.message) {%>
+        <%= message %>
+        <% } %>
+        </p>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="card">
+          <div class="card-body">
+
+
+            <form  enctype="multipart/form-data"  id="add-category-form">
+              <div  class="form-group">
+                <label for="name">Category Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Category Name">
+              </div>
+              
+                
+               
+              
+
+               
+
+              
+
+              <div class="mb-3">
+                <label for="image" class="form-label">Upload Image</label>
+                <input class="form-control" type="file" accept="png,jpg,jpeg" id="image">
+              </div>
+              <button type="submit" class="btn submit-button">Add</button>
+            </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    document.getElementById("add-category-form").addEventListener("submit",(event)=>{
+      event.preventDefault();
+      addCategory();
+    })
+    async function addCategory() {
+      event.preventDefault();
+      const storedToken = localStorage.getItem('bearerToken');
+      const formData = new FormData();
+      const name = document.getElementById("name").value;
+      const image = document.getElementById("image").files[0];
+      
+     
+      
+      formData.append('name',name);
+      formData.append('image',image);
+      
+      
+     
+      
+      try {
+        const response = await fetch('/admin/categories/add-category', {
+          method: 'POST',
+          headers: {
+            
+            'Authorization': `Bearer ${storedToken}`
+          },
+          body:formData,
+        });
+  
+        if (response.ok) {
+          // Handle success
+          window.location.href = '/admin/categories';
+        } else {
+          // Handle failure
+          const responseData = await response.json();
+          const errorMessage = responseData.message || '';
+          document.getElementById("message").innerHTML = errorMessage;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>

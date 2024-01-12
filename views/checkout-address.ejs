@@ -1,0 +1,127 @@
+<%- include("partials/basic-header.ejs") %>
+<body>
+  <div class="container mt-5">
+    <h4 class="login-title">Shipping Address</h4>
+    
+
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="card">
+          <div class="card-body">
+
+            <form action='/cart/checkout' method="POST" id="shippingForm">
+
+              <div id="existingAddressFields">
+                <div class="shipping-option">
+                  <div>
+                  <label>
+                    <input type="radio" name="addressOption" value="existing"> Ship to Existing Address:
+                  </label>
+                </div>
+                <% if(locals.address&&locals.name&&locals.phone) {%>
+                  <input type="text" value="<%= name %>" name="name" hidden>
+                  <input type="text" value="<%= address.addressLine1 %>" name="addressLine1" hidden>
+                  <input type="text" value="<%= address.addressLine2 %>" name="addressLine2" hidden>
+                  <input type="text" value="<%= address.city %>" name="city" hidden>
+                  <input type="text" value="<%= address.province %>" name="province" hidden>
+                  <input type="text" value="<%= address.postalcode %>" name="postalcode" hidden>
+                  <input type="text" value="<%= phone %>" name="phone" hidden>
+                  <div>
+                  <%= name %><br>
+                  <%= address.addressLine1 %>, <%= address.addressLine2 %><br>
+                  <%= address.city %>, <%= address.province %><br><%= address.postalcode %><br>
+                  Ph: <%= phone %>
+                  </div>
+                </div>
+                  <% } else{%>
+                  <div>No Address in your profile</div>
+              
+                  <% } %>
+
+                
+              </div>
+
+
+             <div id="newAddressFields">
+              <label class="newAddress">
+                <input type="radio" name="addressOption" value="new"> Ship to New Address
+              </label>
+              <% if(locals.message){ %>
+                <div>
+                  <%= message.error %>
+                 
+                </div>
+                <% } %> 
+
+                  <div  class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" class="form-control" name="newName" placeholder="Name" id="name">
+                  </div>
+                  <div class="form-group">
+                      <label for="address-line1">Address Line 1</label>
+                      <input type="text" class="form-control" name="newAddressLine1" placeholder="Address" id="address-line1">
+                  </div>
+                  <div class="form-group">
+                      <label for="address-line2">Address Line 2</label>
+                      <input type="text" class="form-control" name="newAddressLine2" placeholder="Address" id="address-line2">
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group col-md-6">
+                      <label for="country">Country</label>
+                      <input type="text" class="form-control" name="newCountry" placeholder="Country" id="country">
+                    </div>
+    
+                    <div class="form-group col-md-6">
+                      <label for="province">Province</label>
+                      <input type="text" class="form-control" name="newProvince" placeholder="Province" id="province">
+                    </div>
+                  </div>
+    
+                  <div class="form-group col-md-6">
+                      <label for="city">City</label>
+                      <input type="text" class="form-control" name="newCity" placeholder="City" id="city">
+                  </div>
+    
+                  <div class="form-group col-md-6">
+                      <label for="postalcode">Postal Code</label>
+                      <input type="text" class="form-control" name="newPostalcode" placeholder="Postal Code" id="postalcode" >
+                  </div> 
+                  
+                
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" class="form-control" name="newPhone" placeholder="Phone Number" id="phone">
+                  </div> 
+                  
+              </div>
+              
+              <button type="submit" class="btn submit-button">Continue</button>  
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+  // Get radio buttons and new address fields
+  const addressOptionRadioGroup = document.getElementsByName("addressOption");
+    const newAddressFields = document.getElementById('newAddressFields').querySelectorAll('input, select, textarea');
+
+    // Add event listener to the form
+    addressOptionRadioGroup.forEach(radio=>{
+    radio.addEventListener('change', function () {
+      // If the existing address radio button is checked, disable new address fields
+      newAddressFields.forEach(field => {
+        field.disabled = addressOptionRadioGroup[0].checked;
+      });
+    });
+  });
+  
+  
+  
+
+</script>
+  
+
+</body>

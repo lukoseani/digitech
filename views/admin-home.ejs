@@ -1,0 +1,76 @@
+<%- include("partials/admin-header.ejs") %>
+<title>Products</title>
+</head>
+<body>
+  
+  <nav class="admin-menu-style">
+  <div class="menu-flex">
+        <div >
+          <a class="navbar-brand brand-name" href="javascript:void(0)">Digi Tech.</a>
+        </div>
+      
+       
+        <ul class="navbar-nav me-auto">
+          <div class="admin-menu">
+          <div>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/products">Product Management</a>
+            </li>
+          </div>
+            <div>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/categories">Category Management</a>
+              </li>
+            </div>
+            <div>
+              <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0)">User Management</a>
+              </li>
+            </div>
+           <div>
+              <li class="nav-item">
+              <a class="nav-link" href="/admin/orders">Order Management</a>
+            </li>
+           </div>
+
+           <div class="admin-logout">
+            <li class="nav-item">
+            <a class="nav-link" href="javascript:void(0)">Admin Logout</a>
+          </li>
+         </div>
+         
+          
+          </ul>
+  
+        
+     
+      </div>
+    </div>
+  
+
+      
+      
+  </nav>
+  <div class="salesReportDiv">
+    <h2 class="sales-title">Sales Report</h2>
+    <div class="salesReport">
+      
+      
+    
+ <% if(locals.totalsales || locals.dailySales){%>
+
+  
+    
+    <div class="sales"><h4>Daily Sales</h4><br>$<%= dailySales %></div>
+    <div class="sales"><h4>Weekly Sales</h4> <br>$<%= weeklySales %></div>
+    <div class="sales"><h4>Yearly sales</h4> <br> $<%= yearlySales %></div>
+ 
+  <% } %>
+</div>
+</div>
+    
+    
+
+
+</body>
+</html>

@@ -1,0 +1,217 @@
+<%- include("partials/basic-header.ejs") %>
+<body>
+  <div class="container mt-5">
+    <h4 class="login-title">Update Product</h4>
+
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="card">
+          <div class="card-body">
+
+
+            <form  enctype="multipart/form-data"  id="update-form">
+              <input type="hidden" name="productId" value = "<%= item._id %>" id="productId">
+              
+              <div  class="form-group">
+                <label for="name">Product Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Product Name" value = "<%= item.name %>">
+              </div>
+              <div class="form-row">
+                
+                <div class="form-group col-md-6">
+                  <label for="brand">Brand Name</label>
+                  <input type="text" class="form-control" id="brand" placeholder="Brand Name" value = "<%= item.brand %>">
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="category">Category</label>
+                  
+
+                      <select class="form-control" name="Category" id="category" >
+                        <option <% if(category){ %> value = "<%= category %>" <% }else{ %> value="" <% }%> 
+                           selected disabled hidden><%= category %></option>
+                           <% if(locals.categories){ %>
+                            <% categories.forEach((category)=>{ %>
+                              <option value="<%= category._id %>"><%= category.name %></option>
+                             <% }) %>
+                            <% } %>
+                      </select>
+          
+                </div>
+                
+               
+                <div class="form-group col-md-6">
+                  <label for="price">Price</label>
+                  <input type="text" class="form-control" id="price" placeholder="Price" value = "<%= item.price %>">
+                </div>
+
+               
+               
+                <div class="form-group col-md-6">
+
+                  <label for="countInStock">Count in Stock</label>
+                  <input type="text" class="form-control" id="countInStock" placeholder="Stock" value = "<%= item.countInStock %>">
+                </div>
+
+               
+               
+              </div>
+
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox"  id="isFeatured" value = "<%= item.isFeatured %>" <% if(item.isFeatured){%>checked <% } %>>
+                <label class="form-check-label" for="isFeatured">
+                  Is Featured?
+                </label>
+              </div>
+
+             
+             
+              <div class="form-group">
+                <label for="productDetails">Product Details</label>
+                <div class="form-floating">
+                  <textarea class="form-control" placeholder="Enter Product Details" id="productDetails" style="height: 100px"><%= item.productDetails %></textarea>
+                </div>
+              </div>
+              <p class="image-title">Image Preview</p>
+              <div class="image-preview-container">
+                
+                <img class="image-preview" src="<%= item.image %>">
+              </div>
+              
+              <p class="image-title">Images Preview</p>
+              <div class="images-flex">
+              <% item.images.forEach(image=>{ %>
+                <div class="image-preview-container">
+                  <img class="image-preview" src="<%= image %>">
+                </div>
+              <% }) %>
+            </div>
+
+
+              <div class="mb-3">
+                <label for="image" class="form-label">Upload Images</label>
+                <input class="form-control" type="file" accept='image/*' name = "images" id="images" multiple onchange="upload(this.files);">
+                <div id="image-info"></div>
+              </div>
+
+              <button type="submit" class="btn submit-button">Update</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    
+
+   
+    
+    
+    function upload(images){
+      const imageInfoContainer = document.getElementById("image-info");
+      imageInfoContainer.innerHTML = "";
+      for (let i = 0; i < images.length; i++) {
+      const imageInfoDiv = document.createElement("div");
+      imageInfoDiv.innerHTML = `Image ${i+1} : ${images[i].name} <button class="delete-image" onclick="deleteImage(${i});"><a> Delete</a></button>`
+      imageInfoContainer.appendChild(imageInfoDiv);
+    
+      }
+    }
+
+    function deleteImage(index) {
+      event.preventDefault();
+      const imageInfoContainer = document.getElementById("image-info");
+      const imagesInput = document.getElementById("images");
+      
+      // Remove the selected image from the file list
+      const files = Array.from(imagesInput.files);
+      files.splice(index, 1);
+
+      // Create a new DataTransfer object
+          const newFileList = new DataTransfer();
+
+        // Add the remaining files to the DataTransfer object
+        files.forEach((file) => {
+          newFileList.items.add(file);
+        });
+
+        // Update the file input with the new FileList
+        imagesInput.files = newFileList.files;
+
+        // Re-render the image info div
+        upload(imagesInput.files);
+}
+    
+    
+const updateForm = document.querySelector("#update-form");
+console.log(updateForm);
+      updateForm.addEventListener("submit",function(event){
+      updateProduct(event);
+    });
+    
+    
+  
+    async function updateProduct(event) {
+      event.preventDefault();
+      const storedToken = localStorage.getItem('bearerToken');
+      const formData = new FormData();
+      const name = document.getElementById("name").value;
+      const brand = document.getElementById("brand").value;
+      const category = document.getElementById("category").value;
+      const price = document.getElementById("price").value;
+      const productDetails = document.getElementById("productDetails").value;
+      const countInStock = document.getElementById("countInStock").value;
+      const images = document.getElementById("images").files;
+      const isFeaturedElement = document.getElementById('isFeatured');
+      const productId = document.getElementById("productId").value;
+      
+      let isFeatured = false;
+      if(isFeaturedElement.checked){
+        isFeatured = true;
+      }
+
+ 
+
+     
+      
+      formData.append('name',name);
+      
+      formData.append('brand',brand);
+      formData.append('category',category);
+      formData.append('price',price);
+      formData.append('productDetails',productDetails);
+      formData.append('countInStock',countInStock);
+      formData.append('isFeatured',isFeatured);
+      formData.append('productId',productId);
+
+      for (let i = 0; i < images.length; i++) {
+      formData.append('images', images[i]);
+      }
+      
+      try {
+        const response = await fetch('/admin/update-product', {
+          method: 'POST',
+          headers: {
+            
+            'Authorization': `Bearer ${storedToken}`,
+          },
+          body:formData,
+        });
+
+        console.log('Response Status:', response);
+  
+        if (response.ok) {
+          // Handle success
+          window.location.href = '/admin/products';
+        } else {
+          // Handle failure
+          console.log(response);
+          console.error('Failed to update product');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>

@@ -1,0 +1,64 @@
+body{
+  font-family:merriweather;
+}
+.headerStyle{
+  background-color:rgb(68, 3, 70);
+  
+}
+.header-div{
+  display:grid;
+  grid-template-columns:1fr 3fr 2fr;
+}
+.brand-name{
+  margin-top: 20px;
+  margin-bottom:20px;
+}
+
+.heading{
+  font-weight:bold;
+  font-size:24px;
+  color:rgb(68, 3, 70);
+  margin:30px;
+  
+}
+
+.search-item{
+
+  margin-top: 20px;
+  margin-bottom:20px;
+}
+
+.go-button{
+  color:rgb(68, 3, 70);
+  background-color: white;
+  margin-top: 21px;
+  margin-bottom:21px;
+}
+
+.submit-button{
+  color:white;
+  background-color: rgb(68, 3, 70);
+  margin-top: 21px;
+  margin-bottom:21px;
+}
+
+.menu-grid{
+  display:grid;
+  
+  text-align:right;
+  margin-right:8px;
+  margin-left:100px; 
+}
+.cart{
+  font-size:14px;
+}
+.my-account{
+  color:rgba(255, 255, 255, 0.55);
+  background-color: rgb(68, 3, 70);
+}
+.my-account:hover{
+  color:rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+

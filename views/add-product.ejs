@@ -1,0 +1,371 @@
+<%- include("partials/basic-header.ejs") %>
+<script src="/cropperjs/cropper.js"></script>
+<link href="/cropperjs/cropper.css" rel="stylesheet">
+<link href="/styles/cropper.css" rel="stylesheet">
+<body>
+  <div class="container mt-5">
+    <h4 class="login-title">Add New Product</h4>
+
+    <div class="row">
+      <div class="col-sm-8">
+        <div class="card">
+          <div class="card-body">
+
+
+            <form  enctype="multipart/form-data"  id="add-product-form">
+              <div  class="form-group">
+                <label for="name">Product Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Product Name">
+              </div>
+              <div class="form-row">
+                
+                <div class="form-group col-md-6">
+                  <label for="brand">Brand Name</label>
+                  <input type="text" class="form-control" id="brand" placeholder="Brand Name">
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="category">Category</label>
+                  
+                    <% if(locals.categories){ %>
+                      <select class="form-control" name="Category" id="category">
+                        <option value="" selected disabled hidden>Select a Category</option>
+                        <% categories.forEach((category)=>{ %>
+                          <option value="<%= category._id %>"><%= category.name %></option>
+                         <% }) %>
+                      </select>
+                      <% } %>
+          
+                </div>
+                
+               
+                <div class="form-group col-md-6">
+                  <label for="price">Price</label>
+                  <input type="text" class="form-control" id="price" placeholder="Price">
+                </div>
+                
+
+               
+               
+                <div class="form-group col-md-6">
+
+                  <label for="countInStock">Count in Stock</label>
+                  <input type="text" class="form-control" id="countInStock" placeholder="Stock">
+                </div>
+
+               
+               
+              </div>
+
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" value="" id="isFeatured">
+                <label class="form-check-label" for="isFeatured">
+                  Is Featured?
+                </label>
+              </div>
+
+             
+             
+              <div class="form-group">
+                <label for="productDetails">Product Details</label>
+                <div class="form-floating">
+                  <textarea class="form-control" placeholder="Enter Product Details" id="productDetails" style="height: 100px"></textarea>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="image" class="form-label">Upload Image</label>
+                <input class="form-control" type="file" accept="png,jpg,jpeg" id="image">
+              </div>
+
+              <div class="main-container" hidden>
+                <div class="img-container">
+                    <img id="image-preview" src="" class="input-img">
+                </div>
+                <button id="btn-crop">Crop</button>
+                <div class="cropped-container">
+                    <img src="" id="output">
+                </div>
+              </div>
+
+             
+
+              <div class="mb-3">
+                <label for="images" class="form-label">Upload Images</label>
+                <input class="form-control" type="file" accept='image/*' name = "images" id="images" multiple >
+                <div id="image-info"></div>  
+              </div>
+              
+             
+              
+              <div id="images-preview-div"></div>
+
+             
+            
+
+              <button type="submit" class="btn submit-button">Add</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+
+    
+
+const formData = new FormData();
+
+document.querySelector("#images").addEventListener("change",function(event){
+  
+  upload(this.files);
+})
+
+function upload(images){
+      const imageInfoContainer = document.getElementById("image-info");
+      imageInfoContainer.innerHTML = "";
+      const imageContainer = document.getElementById("images-preview-div");
+      for (let i = 0; i < images.length; i++) {
+        const imageInfoDiv = document.createElement("div");
+        imageInfoDiv.innerHTML = `Image ${i + 1} : ${images[i].name} <button class="delete-image" data-index=${i} type="button"><a> Delete</a></button>`;
+        imageInfoContainer.appendChild(imageInfoDiv);
+
+        const newImageContainer = document.createElement("div");
+        newImageContainer.innerHTML = `<div class="main-container-images" hidden>
+                <div class="img-container">
+                  <img id="image-preview-${i}" class="input-img">
+                </div>
+                <button class="btn-crop" data-index=${i}>Crop</button>
+                <div class="cropped-container">
+                  <img id="output-${i}">
+                </div>
+              </div>`;
+
+              imageContainer.appendChild(newImageContainer);
+        createCropper(i, images[i]);
+      }
+      setupDeleteButtonListeners();
+    }
+    setupDeleteButtonListeners();
+
+    function createCropper(index, image) {
+      const inputImage = document.getElementById(`image-preview-${index}`);
+      const btnCrop = document.querySelector(`.btn-crop[data-index="${index}"]`);
+      const outputImage = document.getElementById(`output-${index}`);
+      const mainContainer = document.querySelectorAll('.main-container-images');
+      mainContainer.forEach(container => {
+        container.removeAttribute("hidden");
+      });
+
+      const reader = new FileReader();
+
+      reader.onload = function(e){
+        inputImage.src = e.target.result;
+      
+        const cropper = new Cropper(inputImage, {
+          aspectRatio: 1,
+          viewMode: 0,
+          ready: function () {
+            console.log(`Cropper instance for image ${index} is ready.`);
+          },
+        });
+
+        btnCrop.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (!cropper.getImageData()) {
+            console.error(`Image ${index} not loaded yet. Please wait for the image to load.`);
+            return;
+          }
+
+          const croppedImage = cropper.getCroppedCanvas();
+
+          if (croppedImage) {
+            const originalFileExtension = image.name.split('.').pop().toLowerCase();
+            croppedImage.toBlob(function (blob) {
+              formData.append(`image-${index}`, blob, `croppedImage-${index}.${originalFileExtension}`);
+            }, 'image/png');
+            outputImage.src = croppedImage.toDataURL('image/png');
+            const croppedContainer = document.querySelector(`#output-${index}`);
+              if (croppedContainer) {
+                croppedContainer.style.display = 'flex';
+              } else {
+                console.error(`Cropped container not found for image ${index}.`);
+              }
+
+          } else {
+            console.error(`No valid cropping area for image ${index}. Please select a cropping area before clicking "Crop".`);
+          }
+        });
+      };
+
+      reader.readAsDataURL(image);
+    }
+
+
+
+
+
+
+
+
+    
+  function cropImages(event){
+  event.preventDefault();
+  const inputImage = document.getElementById('image-preview');
+  const mainContainer = document.querySelector('.main-container');
+  mainContainer.removeAttribute("hidden");
+ inputImage.onload = function(){
+  const cropper = new Cropper(inputImage, {
+    aspectRatio: 1,
+    viewMode: 0,
+    ready: function () {
+      // This function will be called when the Cropper.js instance is ready.
+      console.log('Cropper.js instance is ready.');
+    },
+  });
+
+  document.querySelector('#btn-crop').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (!cropper.getImageData()) {
+      console.error('Image not loaded yet. Please wait for the image to load.');
+      return;
+    }
+
+    const croppedImage = cropper.getCroppedCanvas();
+    
+
+   if (croppedImage) {
+    const originalFileExtension = image.name.split('.').pop().toLowerCase();
+    croppedImage.toBlob(function(blob){
+      
+      formData.append('image',blob,`croppedImage.${originalFileExtension}`);
+    },'image/png')
+      document.getElementById('output').src = croppedImage.toDataURL('image/png');
+      document.querySelector('.cropped-container').style.display = 'flex';
+    } else {
+      console.error('No valid cropping area. Please select a cropping area before clicking "Crop".');
+    }
+  });
+};
+}
+
+           
+
+   
+
+    
+
+    const image = document.getElementById("image");
+    image.addEventListener("change",function(event){
+      event.preventDefault();
+      const input = event.target;
+      cropImages(event);
+      
+      if(input.files && input.files[0]){
+        const reader = new FileReader();
+        reader.onload = function(e){
+          e.preventDefault();
+          const previewImage = document.getElementById("image-preview");
+          previewImage.src = e.target.result;
+        }
+
+        reader.readAsDataURL(input.files[0]);
+        
+      }
+    })
+
+function setupDeleteButtonListeners() {
+  const deleteButtons = document.querySelectorAll("#image-info .delete-image");
+  deleteButtons.forEach((button, index) => {
+    button.addEventListener("click", function (event) {
+      deleteImage(event, index);
+    });
+  });
+}
+
+
+    function deleteImage(event,index) {
+      event.preventDefault();
+      const imageInfoContainer = document.getElementById("image-info");
+      const imagesInput = document.getElementById("images");
+      
+      // Remove the selected image from the file list
+      const files = Array.from(imagesInput.files);
+      files.splice(index, 1);
+
+      // Create a new DataTransfer object
+          const newFileList = new DataTransfer();
+
+        // Add the remaining files to the DataTransfer object
+
+        files.forEach((file) => {
+          newFileList.items.add(file);
+        });
+
+        // Update the file input with the new FileList
+        imagesInput.files = newFileList.files;
+
+        // Re-render the image info div
+        upload(imagesInput.files);
+}
+
+    const addProductForm = document.querySelector("#add-product-form");
+    addProductForm.addEventListener("submit",function(event){
+      addProduct(event)
+    })
+
+
+    async function addProduct(event) {
+      event.preventDefault();
+      const storedToken = localStorage.getItem('bearerToken');
+      const name = document.getElementById("name").value;
+      const brand = document.getElementById("brand").value;
+      const category = document.getElementById("category").value;
+      const price = document.getElementById("price").value;
+      const productDetails = document.getElementById("productDetails").value;
+      const countInStock = document.getElementById("countInStock").value;
+      const images = document.getElementById("images").files;
+      
+      
+      const isFeaturedElement = document.getElementById('isFeatured');
+      let isFeatured = false;
+      if(isFeaturedElement.checked){
+        isFeatured = true;
+      }
+
+     
+     
+      
+      formData.append('name',name);
+      formData.append('brand',brand);
+      formData.append('category',category);
+      formData.append('price',price);
+      formData.append('productDetails',productDetails);
+      formData.append('countInStock',countInStock);
+      formData.append('isFeatured',isFeatured);
+      
+      try {
+        const response = await fetch('/admin/add-product', {
+          method: 'POST',
+          headers: {
+            
+            'Authorization': `Bearer ${storedToken}`
+          },
+          body:formData,
+        });
+  
+        if (response.ok) {
+          // Handle success
+          window.location.href = '/admin/products';
+        } else {
+          // Handle failure
+          console.log(response);
+          console.error('Failed to add product');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>

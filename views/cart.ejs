@@ -1,0 +1,168 @@
+<%- include("partials/header.ejs") %>
+<link href="/styles/cart.css" rel="stylesheet">
+
+
+
+</head>
+<body>
+<div class="order-summary-body">
+    <div class="cart">
+        <h2 class="cart-title">Your Cart</h2>
+
+        <div id="cart-items">
+
+          <div class="card-body ">
+  
+              
+        </div>
+       
+    </div>
+
+    <% if(locals.product){ %>
+    
+  
+  </div>
+
+
+    
+  <div id="order-summary-append">
+
+  </div>
+
+  <% } %>
+
+  <script>
+          const productData = '<%= product%>' ? '<%-JSON.stringify(product)%>': null;
+          const cartItems = productData ? JSON.parse(productData) : null;
+
+       
+        
+        const cartList = document.getElementById('cart-items');
+
+        // Display cart items
+        function renderCartItems(){
+
+        cartList.innerHTML = "";
+        if(cartItems && Array.isArray(cartItems)){
+          let totalPrice=0;
+          
+        cartItems.forEach((item,index) => {
+
+            totalPrice += item.price * item.quantity;
+            const listItem = document.createElement('div');
+            listItem.innerHTML = `<div class="cart-div">
+          <div class="cart-image">
+            <img src="${item.image}" class="cart-image-img" id="cart-image">
+          </div>
+          <div class="cart-details">
+            ${item.name}
+            <div class="item-update-div">
+            <form method="POST" action="cart/decrement/${index}"><button class="qty-button" type="submit">-</button></form>
+            <div class="qty">${item.quantity}</div>
+            <form method="POST" action="cart/increment/${index}"><button class="qty-button" type="submit">+</button></form>
+            <button class="delete-button" >Delete</button>
+            </div>
+            
+          </div>
+          <div class="cart-price">
+           ${item.price}
+          </div>
+          
+        </div>`;
+       
+        if(item){
+        const deleteButton = listItem.querySelector(".delete-button");
+        
+        deleteButton.addEventListener("click",function(event){
+          deleteItem(event,index);
+        })
+        
+       
+      }
+        
+
+        const orderSummary = document.getElementById("order-summary-append");
+        let tax = totalPrice * 0.05;
+        let shipping = 20;
+        let total = totalPrice + tax + shipping;
+        orderSummary.innerHTML = "";
+        orderSummary.innerHTML = `<div class="order-summary-div" id="order-summary">
+        <p class="order-summry">Order Summary</p>
+        <div class="price-grid">
+          <div>
+          <p>Subtotal </p>
+          <p>Shipping</p>
+          <p>Tax</p>
+          <p>Total </p>
+        </div>
+          <div>
+            <p>$${totalPrice}</p>
+            <p>$${tax}</p>
+            <p>$${shipping}</p>
+            <p>$${total}</p>
+          </div>
+        </div>
+        <a href="/cart/add-address"><button class="checkout-button">Proceed to Checkout</button></a>
+      </div>
+    </div>`
+          localStorage.setItem('totalPrice',totalPrice);
+          localStorage.setItem('tax',tax);
+          localStorage.setItem('shipping',shipping);
+          localStorage.setItem('total',total);
+          cartList.appendChild(listItem);
+          
+        });
+      }
+
+
+      else{
+      
+      const emptyItemDiv = document.createElement('div');
+      emptyItemDiv.innerHTML = `<div class="cart-empty">
+      Your Cart is empty.
+      Please add things to cart <a href="/products" style="color:green; font-weight:bold"> shop</a>
+      </div>`
+      cartList.appendChild(emptyItemDiv);
+    }
+
+
+
+      }
+      
+      
+        async function deleteItem(event,index){
+          event.preventDefault();
+          
+          try{
+          const response = await fetch('/cart/delete',{
+          method:'POST',
+          headers:{
+          'Content-Type': 'Application/json',
+          
+         },
+        body:JSON.stringify({
+          index,
+        })
+        
+
+      })
+      if(response.ok){
+        //
+        renderCartItems();
+        window.location.href="/cart";
+      }
+    }
+    
+    catch(error){
+          console.error(error);
+        }
+          
+      }
+      
+      renderCartItems();
+  </script>   
+
+        
+
+</body>
+</html>
