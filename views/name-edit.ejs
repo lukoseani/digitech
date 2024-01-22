@@ -18,13 +18,13 @@
                 </p>
             </div>
             
-            <form id="phoneUpdate">
+            <form id="nameUpdate">
                 
                
                 
                 <div class="form-group">
-                  <label for="phone">Phone Number</label>
-                  <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" value="<%= user.phone %>">
+                  <label for="name">Name</label>
+                  <input type="text" class="form-control" id="name" name="name" placeholder="Name" value="<%= user.name %>">
                 </div>
                
               <button type="submit" class="btn submit-button">Update</button>
@@ -39,36 +39,42 @@
 
       
 
-    document.getElementById("phoneUpdate").addEventListener("submit",(event)=>{
-      let phone;
-      const phoneElement = document.getElementById("phone");
-      if(phoneElement){
-      phone = phoneElement.value;
+    document.getElementById("nameUpdate").addEventListener("submit",(event)=>{
+      let name;
+      const nameElement = document.getElementById("name");
+      if(nameElement){
+      name = nameElement.value;
+      name = name.trim();
+      
       
       }
+      
+      
+      const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+      
 
-      if(phone.length !== 10 || phone == ""){
+      if(name == "" || /[0-9]/.test(name) || specialCharacters.test(name)){
         
-        alert("Please enter valid phone number");
+        alert("Invalid Entry");
         event.preventDefault();
       }
       else{
-      updatePhone(phone);
+      updateName(name);
       }
     })
   
   
-async function updatePhone(phone){
+async function updateName(name){
  try{
   
-   const response = await fetch('/users/edit-user',{
+   const response = await fetch('/users/edit-name',{
      method:'POST',
      headers : {
        'Content-Type':'application/json'
      },
      credentials:'include',
      body:JSON.stringify({
-       phone: isNaN(phone)?null:phone,
+      name: name ? name:null,
      })
    })
 
@@ -82,7 +88,7 @@ async function updatePhone(phone){
           const responseData = await response.json();
           const errorMessage = responseData.message || 'Update Failed';
           alert(errorMessage);
-          window.location.href('/users/edit-user');
+          window.location.href('/users/edit-name');
         }
  }
      catch (error) {

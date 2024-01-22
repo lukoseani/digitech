@@ -10,6 +10,7 @@ const userView = async(req,res)=>{
 
 const blockUser = async(req,res)=>{
 
+  if(req.body.userId.trim()){
   const user = await User.findById(req.body.userId);
   if(!user.isBlocked){
   user.isBlocked = true;
@@ -17,6 +18,7 @@ const blockUser = async(req,res)=>{
   else{
     user.isBlocked = false;
   }
+
   
   
   
@@ -26,6 +28,7 @@ const blockUser = async(req,res)=>{
   await user.save();
   res.status(200).json({message:"user status has been updated"});
   }
+}
 
   const getUser = async(req,res)=>{
     const user = await User.findById(req.params.id).select('-passwordHashed');

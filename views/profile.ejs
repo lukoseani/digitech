@@ -11,6 +11,7 @@
               <div class="profile">
               <div class="profile-field">Name</div>
               <div><%= user.name %></div>
+              <div><a class="name-button" href="/users/edit-name">Edit</a></div>
               </div>
               
               <div class="profile">
@@ -20,8 +21,10 @@
 
 
             <div class="profile">
-              <div>Email<br>Phone</div>
-              <div><%= user.email %><br><%= user.phone %></div>
+              <div>Email</div>
+              <div><%= user.email %></div><br>
+              <div>Phone</div>
+              <div><%= user.phone %></div>
               <div><a class="address-button" href="/users/edit-user">Edit</a></div>
             </div>
               

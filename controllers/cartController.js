@@ -20,6 +20,7 @@ paypal.configure({
 
 //get cart item
 const getCart = (req,res)=>{
+  
   res.render("cart.ejs",{product:req.session.cart,user:req.session.user});
 }
 
@@ -52,6 +53,12 @@ const decrementCartQuantity = (req,res)=>{
 
 //add Item to the cart
 const addItemToCart = async(req,res)=>{
+  if(!req.session.loggedIn){
+    console.log("You are not logged in, Please login");
+    return res.status(400).json({message:"Please login"});
+  }
+  else{
+  
   const productId = req.body.productId;
   let flag = false;
   const product = await Product.findById(productId);
@@ -73,6 +80,7 @@ const addItemToCart = async(req,res)=>{
   req.session.cart.push(product);
   return res.status(200).json({message:"item has been added to the cart"});
     }
+  }
   }
   
 //add shipping address

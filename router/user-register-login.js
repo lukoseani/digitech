@@ -1,5 +1,5 @@
 import express from 'express';
-import {userLoginView,registerView,userLogin,registerUser,logout,getProfile,addAddress,getAddress,getEditForm,editUser,updatePassword,getPasswordForm} from '../controllers/loginController.js';
+import {userLoginView,registerView,userLogin,registerUser,logout,getProfile,addAddress,getAddress,getEditForm,editUser,updatePassword,getPasswordForm,getNameEditForm,editName} from '../controllers/loginController.js';
 import {registerVerifyOtp,resendOtp,registerOtpView,verifyOtp,loginOtpView} from '../controllers/otpController.js'
 
 import {User} from '../models/users.js';
@@ -65,10 +65,12 @@ router.post('/add-address',addAddress);
 //get edit form 
 
 router.get('/edit-user',getEditForm);
+router.get('/edit-name',getNameEditForm);
 
 //edit user info
 
 router.post('/edit-user',editUser);
+router.post('/edit-name',editName);
 
 //update password
 router.get('/get-password-form',getPasswordForm);

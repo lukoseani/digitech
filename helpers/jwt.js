@@ -33,6 +33,7 @@ function authJwt(){
       `/cart/checkout`,
       `/cart/confirm-order`,
       '/users/edit-user',
+      '/users/edit-name',
       `/users/address`,
       `/users/get-password-form`,
       `/users/update-password`,

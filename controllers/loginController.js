@@ -119,7 +119,17 @@ const registerView = async(req,res)=>{
 //user login
 
 const userLogin = async(req,res)=>{
-  const email = req.body.email;
+  const email = req.body.email.trim();
+  if(email == ""){
+    return res.status(404).json({success:false, message:'Email can not be blank'});
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValidEmail = emailRegex.test(email);
+  if (!isValidEmail) {
+    return res.status(403).json({message:'Email is not valid'});
+}
+
   const user = await User.findOne({email:email});
   if(!user){
     res.status(404).json({success:false, message:'user not found'});
@@ -294,28 +304,69 @@ const addAddress = async(req,res)=>{
 
 }
 
+const getNameEditForm = async(req,res)=>{
+  const user = await User.findById(req.session.user._id);
+  res.render("name-edit.ejs",{user:user});
+}
+
+//edit user name
+
+const editName = async(req,res)=>{
+  const name = req.body.name;
+  console.log("name "+name);
+
+  if(name == ""){
+    return res.status(400).json({message:"name cannot be blank"});
+  }
+
+  if(!req.session.user){
+    console.log("session expired");
+    return res.status(400).json({message:"Cannot update the phone number"})
+  } 
+
+  const user = await User.findByIdAndUpdate(req.session.user._id,{name:name});
+  res.status(200).json({message:"success"});
+}
+
+//get user edit form
+
 const getEditForm = async(req,res)=>{
   const user = await User.findById(req.session.user._id);
   res.render("user-edit.ejs",{user:user});
 }
 
+//edit user phone number
 const editUser = async(req,res)=>{
-  const {email,phone} = req.body;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isValidEmail = emailRegex.test(email);
-  if(!isValidEmail || phone.length !== 10){
-    res.render("user-edit.ejs",{message:"Please enter valid input"});
+  
+  
+  let phone = req.body.phone;
+
+  phone = Number(phone);
+  
+
+  if(String(phone).length !== 10 || phone === "" || isNaN(phone) || typeof phone !== 'number' || phone == null){
+
+    return res.status(400).json({message:"Please enter valid phone number"})
+  }
+  if(!req.session.user){
+    console.log("session expired");
+    return res.status(400).json({message:"Cannot update the phone number"})
   }
 
-  const user = await User.findByIdAndUpdate(req.session.user._id,{email:email,phone:phone});
-  res.redirect("/users/profile");
+  const user = await User.findByIdAndUpdate(req.session.user._id,{phone:phone});
+  
+  res.status(200).json({message:"success"});
 }
+
+//get password edit form
 
 const getPasswordForm = (req,res)=>{
   
   res.render("passwordForm.ejs");
 
 }
+
+//update password
 
 const updatePassword = async (req, res) => {
   try {
@@ -362,4 +413,4 @@ const updatePassword = async (req, res) => {
 
 
 
-export {adminLogin,adminLoginView,adminHomeView,userLoginView,registerView,userLogin,registerUser,logout,getProfile,addAddress,getAddress,getEditForm,editUser,getPasswordForm,updatePassword};
+export {adminLogin,adminLoginView,adminHomeView,userLoginView,registerView,userLogin,registerUser,logout,getProfile,addAddress,getAddress,getEditForm,editUser,getNameEditForm,editName,getPasswordForm,updatePassword};
