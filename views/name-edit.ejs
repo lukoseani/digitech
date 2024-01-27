@@ -10,13 +10,7 @@
 
             <h2 class="login-title">Digi Tech.</h2>
 
-            <div>
-              <p class="error-message">
-                <% if(locals.message) {%>
-                <%= message %>
-                <% } %>
-                </p>
-            </div>
+            
             
             <form id="nameUpdate">
                 
@@ -25,6 +19,11 @@
                 <div class="form-group">
                   <label for="name">Name</label>
                   <input type="text" class="form-control" id="name" name="name" placeholder="Name" value="<%= user.name %>">
+                </div>
+                <div>
+                  <p id="message" class="error-message">
+
+                  </p>
                 </div>
                
               <button type="submit" class="btn submit-button">Update</button>
@@ -38,35 +37,44 @@
   <script>
 
       
-
+    let formSubmitted = false;
+    const nameElement = document.getElementById("name");
+    const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
     document.getElementById("nameUpdate").addEventListener("submit",(event)=>{
+      event.preventDefault();
       let name;
-      const nameElement = document.getElementById("name");
+      
       if(nameElement){
       name = nameElement.value;
       name = name.trim();
       
-      
       }
       
-      
-      const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
-      
-
+   
       if(name == "" || /[0-9]/.test(name) || specialCharacters.test(name)){
-        
-        alert("Invalid Entry");
+        const message = "Invalid Name";
+        document.getElementById("message").textContent = message ?  message : "";
         event.preventDefault();
       }
       else{
-      updateName(name);
+        formSubmitted = true;
+        updateName(name,event);
       }
+    })
+
+    nameElement.addEventListener("input",(event)=>{
+      if(!formSubmitted){
+      const name = event.target.value;
+      const message = name == "" || /[0-9]/.test(name) || specialCharacters.test(name) ? 'Invalid Name' : "";
+      document.getElementById("message").textContent = message;
+    }
+
     })
   
   
-async function updateName(name){
+async function updateName(name,event){
  try{
-  
+   
    const response = await fetch('/users/edit-name',{
      method:'POST',
      headers : {
@@ -87,8 +95,10 @@ async function updateName(name){
           // Handle failure
           const responseData = await response.json();
           const errorMessage = responseData.message || 'Update Failed';
-          alert(errorMessage);
-          window.location.href('/users/edit-name');
+          document.getElementById("message").textContent = errorMessage;
+          return false;
+          event.preventDefault();
+          
         }
  }
      catch (error) {

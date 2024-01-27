@@ -34,6 +34,7 @@
     "otp-generator": "^4.0.1",
     "path": "^0.12.7",
     "paypal-rest-sdk": "^1.8.1",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "sweetalert": "^2.1.2"
   }
 }

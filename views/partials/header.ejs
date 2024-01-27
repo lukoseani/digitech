@@ -16,7 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
   <header>
    
     
@@ -73,7 +74,7 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                      
                         <% if(locals.user) {%>
-                          <a class="dropdown-item" href="/users/profile">Profile</a>
+                          <a class="dropdown-item" id="profile">Profile</a>
                           <a class="dropdown-item" href="/users/logout">
                           Logout
                           <% }else{ %>
@@ -113,6 +114,53 @@
           
       </nav>
     </div>
+
+    <script>
+      const profileElement = document.getElementById("profile");
+      if(profileElement){
+      profileElement.addEventListener("click",(event)=>{
+        event.preventDefault();
+        checkSession(event);
+      })
+    }
+      
+
+      async function checkSession(event){
+
+        try{
+          const response = await fetch("/users/profile",{
+            method : 'GET',
+            header: {
+              'Content-Type':'application/json'
+            },
+            credentials : 'include',
+          })
+
+          if(response.ok){
+            
+            window.location.href = "/users/profile";
+          }else{
+            
+            Swal.fire({
+              title: 'Session Expired',
+              text: 'Your session has expired. Please log in again.',
+              icon: 'warning',
+              confirmButtonText: 'Ok'
+            }).then((result)=>{
+              if(result.value){
+                window.location.href = "/users/login";
+              }
+            });
+            
+          }
+          
+        }
+        catch(error){
+          console.log("error",error);
+        }
+      }
+
+  </script>
  
   </header>
   

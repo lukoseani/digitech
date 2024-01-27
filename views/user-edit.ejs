@@ -10,13 +10,7 @@
 
             <h2 class="login-title">Digi Tech.</h2>
 
-            <div>
-              <p class="error-message">
-                <% if(locals.message) {%>
-                <%= message %>
-                <% } %>
-                </p>
-            </div>
+            
             
             <form id="phoneUpdate">
                 
@@ -25,6 +19,12 @@
                 <div class="form-group">
                   <label for="phone">Phone Number</label>
                   <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" value="<%= user.phone %>">
+                </div>
+
+                <div>
+                  <p class="error-message" id="message">
+                    
+                    </p>
                 </div>
                
               <button type="submit" class="btn submit-button">Update</button>
@@ -38,27 +38,48 @@
   <script>
 
       
-
+    let formSubmitted = false;
+    const phoneElement = document.getElementById("phone");
+    let regExPhone = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+    
     document.getElementById("phoneUpdate").addEventListener("submit",(event)=>{
       let phone;
-      const phoneElement = document.getElementById("phone");
-      if(phoneElement){
-      phone = phoneElement.value;
       
+      if(phoneElement){
+        phone = phoneElement.value;
       }
+      
+      
+  
 
-      if(phone.length !== 10 || phone == ""){
+      if( phone == "" || !regExPhone.test(phone)){
         
-        alert("Please enter valid phone number");
+        const message = "Invalid phone number";
+        document.getElementById("message").textContent = message;
         event.preventDefault();
       }
       else{
-      updatePhone(phone);
+      formSubmitted = true;
+      updatePhone(phone,event);
       }
     })
+
+    
+      phoneElement.addEventListener("input",(event)=>{
+        if(!formSubmitted){
+        const phone = event.target.value;
+        
+        const message = phone === "" || !regExPhone.test(phone) ? "Invalid phone number" : "";
+        document.getElementById("message").textContent = message;
+        }
+      })
+    
   
   
-async function updatePhone(phone){
+async function updatePhone(phone,event){
+  event.preventDefault();
+  
+  
  try{
   
    const response = await fetch('/users/edit-user',{
@@ -68,7 +89,7 @@ async function updatePhone(phone){
      },
      credentials:'include',
      body:JSON.stringify({
-       phone: isNaN(phone)?null:phone,
+       phone,
      })
    })
 
@@ -79,14 +100,20 @@ async function updatePhone(phone){
    }
    else {
           // Handle failure
+          
+          
+          
           const responseData = await response.json();
-          const errorMessage = responseData.message || 'Update Failed';
-          alert(errorMessage);
-          window.location.href('/users/edit-user');
+          const message = responseData.message || 'Update Failed';
+          document.getElementById("message").textContent = message;
+          event.preventDefault();
+          return false;
+          
         }
  }
      catch (error) {
         console.error(error);
+        event.preventDefault();
       }
     }
   

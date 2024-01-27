@@ -24,10 +24,10 @@ const userSchema = mongoose.Schema({
   },
 
   phone: {
-    type:Number,
+    type:String,
     required:true,
   },
-  
+
   isAdmin: {
     type:Boolean,
     default:false,

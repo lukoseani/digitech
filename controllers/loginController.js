@@ -8,6 +8,7 @@ import {Address} from '../models/address.js';
 import {Cart} from '../models/cart.js';
 import {Product} from '../models/product.js';
 
+
 const adminLogin = async(req,res)=>{
   const secret = process.env.secret;
   const user = await User.findOne({email:req.body.email});
@@ -258,6 +259,11 @@ const logout = (req,res)=>{
 
 const getProfile = async(req,res)=>{
   try{
+    if(!req.session || !req.session.user){
+      
+      
+      return res.status(500).json({message:"Session has timed out"})
+    }
   const user = await User.findById(req.session.user._id).populate('address');
   const order = await Cart.find({ user: req.session.user._id }).populate({
     path: 'cartItems',
@@ -284,23 +290,29 @@ const getAddress = async(req,res)=>{
 
 const addAddress = async(req,res)=>{
 
-  const {addressLine1,city,province,postalcode,country} = req.body;
+  console.log("reached client-side");
+  console.log(req.body.address);
+  const {addressLine1,addressLine2,city,province,postalcode,country} = req.body.address;
 
   if(!addressLine1 || !city || !province || !postalcode || !country){
     
-    return res.render('address.ejs',{message:'All fields are required'});
+    return res.status(400).json({message:'All fields are required'});
+  }
+  if(!req.session){
+    return res.status(400).json({message:'Unable to update'});
   }
 
   let address = new Address({
-    addressLine1:req.body.addressLine1,
-    addressLine2:req.body.addressLine2,
-    city:req.body.city,
-    province:req.body.province,
-    postalcode:req.body.postalcode,
+    addressLine1:addressLine1,
+    addressLine2:addressLine2,
+    city:city,
+    province:province,
+    postalcode:postalcode,
   })
+  console.log(address);
   address = await address.save();
   const user = await User.findByIdAndUpdate(req.session.user._id,{address:address});
-  res.redirect('/users/profile');
+  res.status(200).json({message:'success'});
 
 }
 
@@ -313,15 +325,15 @@ const getNameEditForm = async(req,res)=>{
 
 const editName = async(req,res)=>{
   const name = req.body.name;
-  console.log("name "+name);
+  const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
 
-  if(name == ""){
-    return res.status(400).json({message:"name cannot be blank"});
+  if(name == "" || name == null || specialCharacters.test(name) || /[0-9]/.test(name)){
+    return res.status(400).json({message:"Name cannot be updated"});
   }
 
   if(!req.session.user){
     console.log("session expired");
-    return res.status(400).json({message:"Cannot update the phone number"})
+    return res.status(400).json({message:"unable to update the name"})
   } 
 
   const user = await User.findByIdAndUpdate(req.session.user._id,{name:name});
@@ -339,15 +351,17 @@ const getEditForm = async(req,res)=>{
 const editUser = async(req,res)=>{
   
   
+  if(!req.body.phone){
+    return res.status(400).json({message:"Please enter valid phone number"});
+  }
   let phone = req.body.phone;
-
-  phone = Number(phone);
   
 
-  if(String(phone).length !== 10 || phone === "" || isNaN(phone) || typeof phone !== 'number' || phone == null){
-
-    return res.status(400).json({message:"Please enter valid phone number"})
+  const regExPhone = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+  if(!regExPhone.test(phone)){
+    return res.status(400).json({message:"unable to update phone number"});
   }
+
   if(!req.session.user){
     console.log("session expired");
     return res.status(400).json({message:"Cannot update the phone number"})

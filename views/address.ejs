@@ -7,42 +7,58 @@
       <div class="col-sm-8">
         <div class="card">
           <div class="card-body">
-            <% if(locals.message){ %>
-              <p style="color:red"><%= message %></p>
-              <% } %>
+            <div>
+              <p class="error-message" id="message"></p>
+              </div>
+              
 
-            <form action="/users/add-address" method="POST">
+            <form id="addressForm">
                 <div class="form-group">
                   <label for="address-line1">Address Line 1</label>
                   <input type="text" class="form-control" name="addressLine1" placeholder="Address" id="address-line1">
+                  <div>
+                    <p class="error-message" id="line1Message"></p>
+                    </div>
                 </div>
                 <div class="form-group">
-                  <label for="address-line2">Address Line 1</label>
+                  <label for="address-line2">Address Line 2</label>
                   <input type="text" class="form-control" name="addressLine2" placeholder="Address" id="address-line2">
                 </div>
                 <div class="form-row">
                 <div class="form-group col-md-6">
                   <label for="country">Country</label>
                   <input type="text" class="form-control" name="country" placeholder="Country" id="country">
+                  <div>
+                    <p class="error-message" id="countryMessage"></p>
+                  </div>
                 </div>
 
                 <div class="form-group col-md-6">
                   <label for="province">Province</label>
                   <input type="text" class="form-control" name="province" placeholder="Province" id="province">
+                  <div>
+                    <p class="error-message" id="provinceMessage"></p>
+                  </div>
                 </div>
 
                 <div class="form-group col-md-6">
                   <label for="city">City</label>
                   <input type="text" class="form-control" name="city" placeholder="City" id="city">
+                  <div>
+                    <p class="error-message" id="cityMessage"></p>
+                  </div>
                 </div>
 
                 <div class="form-group col-md-6">
                   <label for="postalcode">Postal Code</label>
                   <input type="text" class="form-control" name="postalcode" placeholder="Postal Code" id="postalcode" >
+                  <div>
+                    <p class="error-message" id="postalMessage"></p>
+                  </div>
                 </div> 
               </div>
             
-              <button type="submit" class="btn submit-button">Continue</button>
+              <button type="submit" class="btn submit-button" id="submit">Submit</button>
             </div>
             </form>
           </div>
@@ -51,6 +67,139 @@
     </div>
   </div>
 
+  <script>
+
+    const messageElement = document.getElementById("message");
+    const addressForm = document.getElementById("addressForm");
+    const addressLineExp = /^[a-zA-Z0-9\s,.'-]*$/;
+    const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+    const postalCodeExp = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+    const submitButton = document.getElementById("submit");
+    let formSubmitted = false;
+
+    addressForm.addEventListener("submit",async(event)=>{
+      event.preventDefault();
+      const addressLine1 = document.getElementById("address-line1").value;
+      const addressLine2 = document.getElementById("address-line2").value;
+      const city = document.getElementById("city").value;
+      const country = document.getElementById("country").value;
+      const province = document.getElementById("province").value;
+      const postalcode = document.getElementById("postalcode").value;
+
+      if(!addressLine1 || !city || !country || !province || !postalcode){
+        messageElement.textContent = "Fill required fields";
+        submitButton.disabled = true;
+      }
+
+      else{
+        formSubmitted = true;
+      const address = {
+        addressLine1 : addressLine1,
+        addressLine2 : addressLine2,
+        city : city,
+        province : province,
+        country : country,
+        postalcode : postalcode
+        
+      }
+      submitButton.disabled = false;
+      await updateAddress(address,event);
+    }
+    })
+
   
+    document.getElementById("address-line1").addEventListener("input",(event)=>{
+      
+      if(!formSubmitted){
+      let addressValue = event.target.value;
+      addressValue = addressValue.trim();
+      const errorMessage = addressLineExp.test(addressValue) && addressValue !== "" ? "" : 'invalid address';
+        const messageElement = document.getElementById("line1Message");
+        messageElement.textContent = errorMessage;
+        submitButton.disabled = !!errorMessage;
+      }
+    })
+    document.getElementById("city").addEventListener("input",(event)=>{
+      
+      if(!formSubmitted){
+      let city = event.target.value;
+      city = city.trim();
+      const errorMessage = specialCharacters.test(city) || city === "" || /[0-9]/.test(city) ? 'invalid city format' : "";
+      const messageElement = document.getElementById("cityMessage");
+      messageElement.textContent = errorMessage;
+      submitButton.disabled = !!errorMessage;
+      }
+    })
+
+    document.getElementById("province").addEventListener("input",(event)=>{
+      
+      if(!formSubmitted){
+      let province = event.target.value;
+      province = province.trim();
+      const errorMessage = specialCharacters.test(province) || province === "" || /[0-9]/.test(province) ? 'invalid province format' : "";
+      const messageElement = document.getElementById("provinceMessage");
+      messageElement.textContent = errorMessage;
+      submitButton.disabled = !!errorMessage;
+      }
+    })
+
+    document.getElementById("country").addEventListener("input",(event)=>{
+      
+      if(!formSubmitted){
+      let country = event.target.value;
+      country = country.trim();
+      const errorMessage = specialCharacters.test(country) || country === "" || /[0-9]/.test(country) ? 'invalid country format' : "";
+      const messageElement = document.getElementById("countryMessage");
+      messageElement.textContent = errorMessage;
+      submitButton.disabled = !!errorMessage;
+      }
+    })
+
+    document.getElementById("postalcode").addEventListener("input",(event)=>{
+      
+      if(!formSubmitted){
+      let postalcode = event.target.value;
+      postalcode = postalcode.trim();
+      const errorMessage = postalCodeExp.test(postalcode) && postalcode !== "" ?  "" : 'Invalid postalcode format';
+      const messageElement = document.getElementById("postalMessage");
+      messageElement.textContent = errorMessage;
+      submitButton.disabled = !!errorMessage;
+      }
+    })
+
+
+    async function updateAddress(address,event){
+     try{
+    const response = await fetch('/users/add-address',{
+      method : 'POST',
+      headers:{
+        'Content-Type' : 'application/json',
+      },
+      credentials:'include',
+      body:JSON.stringify({
+        address
+ 
+      })
+
+    })
+
+    if(response.ok){
+      
+      window.location.replace('/users/profile');
+    }
+    else{
+      const responseData = await response.json();
+      const errorMessage = responseData.message || 'unable to update';
+      messageElement.textContent = errorMessage;
+      event.preventDefault();
+
+    }
+   }
+   catch(error){
+    console.error(error);
+   }
+  }
+
+  </script>
 
 </body>
