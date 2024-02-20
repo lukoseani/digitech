@@ -1,7 +1,7 @@
 <%- include("partials/basic-header.ejs") %>
 <body>
   <div class="container mt-5">
-    <h4 class="login-title">Add Address</h4>
+    <h4 class="login-title">Update Address</h4>
 
     <div class="row">
       <div class="col-sm-8">
@@ -11,23 +11,23 @@
               <p class="error-message" id="message"></p>
               </div>
               
-
+            <% if(locals.address) {%>
             <form id="addressForm">
                 <div class="form-group">
                   <label for="address-line1">Address Line 1</label>
-                  <input type="text" class="form-control" name="addressLine1" placeholder="Address" id="address-line1">
+                  <input type="text" class="form-control" name="addressLine1" placeholder="Address" id="address-line1" value="<%= address.addressLine1 %>">
                   <div>
                     <p class="error-message" id="line1Message"></p>
                     </div>
                 </div>
                 <div class="form-group">
                   <label for="address-line2">Address Line 2</label>
-                  <input type="text" class="form-control" name="addressLine2" placeholder="Address" id="address-line2">
+                  <input type="text" class="form-control" name="addressLine2" placeholder="Address" id="address-line2" value="<%= address.addressLine2 %>">
                 </div>
                 <div class="form-row">
                 <div class="form-group col-md-6">
                   <label for="country">Country</label>
-                  <input type="text" class="form-control" name="country" placeholder="Country" id="country">
+                  <input type="text" class="form-control" name="country" placeholder="Country" id="country" value="<%= address.country %>">
                   <div>
                     <p class="error-message" id="countryMessage"></p>
                   </div>
@@ -35,7 +35,7 @@
 
                 <div class="form-group col-md-6">
                   <label for="province">Province</label>
-                  <input type="text" class="form-control" name="province" placeholder="Province" id="province">
+                  <input type="text" class="form-control" name="province" placeholder="Province" id="province" value="<%= address.province %>">
                   <div>
                     <p class="error-message" id="provinceMessage"></p>
                   </div>
@@ -43,23 +43,26 @@
                 
                 <div class="form-group col-md-6">
                   <label for="city">City</label>
-                  <input type="text" class="form-control" name="city" placeholder="City" id="city">
+                  <input type="text" class="form-control" name="city" placeholder="City" id="city" value="<%= address.city %>">
                   <div>
                     <p class="error-message" id="cityMessage"></p>
                   </div>
                 </div>
                 <div class="form-group col-md-6">
                   <label for="postalcode">Postal Code</label>
-                  <input type="text" class="form-control" name="postalcode" placeholder="Postal Code" id="postalcode" >
+                  <input type="text" class="form-control" name="postalcode" placeholder="Postal Code" id="postalcode" value="<%= address.postalcode %>">
                   <div>
                     <p class="error-message" id="postalMessage"></p>
                   </div>
                 </div> 
               </div>
           
+              <% } %>
+              <div>
+                <button type="submit" class="btn submit-button" id="submit">Save</button>
+                <button type="submit" class="btn delete-address-button" id="delete">Delete</button>
+              </div>
               
-            
-              <button type="submit" class="btn submit-button" id="submit">Submit</button>
             </div>
             </form>
           </div>
@@ -77,6 +80,20 @@
     const postalCodeExp = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
     const submitButton = document.getElementById("submit");
     let formSubmitted = false;
+
+    function getId(){
+      const urlParams = new URLSearchParams(window.location.search);
+      const addressId = urlParams.get('id');
+      return addressId;
+    }
+
+    //delete address
+
+    document.getElementById("delete").addEventListener("click",async (event)=>{
+      event.preventDefault();
+      const addressId = getId();
+      await updateAddress('/users/delete-address',addressId,event);
+    })
 
     addressForm.addEventListener("submit",async(event)=>{
       event.preventDefault();
@@ -104,7 +121,9 @@
         
       }
       submitButton.disabled = false;
-      await updateAddress(address,event);
+      const addressId = getId();
+      
+      await updateAddress('/users/edit-address',addressId,event,address);
     }
     })
 
@@ -169,16 +188,18 @@
     })
 
 
-    async function updateAddress(address,event){
+    async function updateAddress(route,addressId,event,address=''){
+      
      try{
-    const response = await fetch('/users/add-address',{
+    const response = await fetch(route,{
       method : 'POST',
       headers:{
         'Content-Type' : 'application/json',
       },
       credentials:'include',
       body:JSON.stringify({
-        address
+        address,
+        addressId
  
       })
 

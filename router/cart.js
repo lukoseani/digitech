@@ -1,14 +1,15 @@
 import express from 'express';
+import {checkSession} from '../helpers/session-handler.js';
 import {getCart,deleteCartItem,incrementCartQuantity,decrementCartQuantity,addItemToCart,checkout,confirmOrder,cancelOrder,addShippingAddress,paypalCheckout,handlePayment} from '../controllers/cartController.js';
 
 const router = express.Router();
 
 //client side cart
 
-router.get('/',getCart);
+router.get('/',checkSession,getCart);
 
 //delete item from cart
-router.post('/delete',deleteCartItem);
+router.post('/delete',checkSession,deleteCartItem);
 
 //increment cart quantity
 router.post('/increment/:index',incrementCartQuantity);
@@ -17,15 +18,15 @@ router.post('/increment/:index',incrementCartQuantity);
 router.post('/decrement/:index',decrementCartQuantity);
 
 
-router.get('/add-address',addShippingAddress);
+router.get('/add-address',checkSession,addShippingAddress);
 
 //checkout with adding shipping address
 
-router.post('/checkout',checkout)
+router.post('/checkout',checkSession,checkout)
 
 
 //add item to the cart
-router.post('/',addItemToCart)
+router.post('/',checkSession,addItemToCart)
 
 //paypal 
 router.get('/create-paypal-order',paypalCheckout);
@@ -48,9 +49,9 @@ router.get('/err',(req,res)=>{
 
 
 //get confirm order
-router.get('/confirm-order',confirmOrder);
+router.get('/confirm-order',checkSession,confirmOrder);
 
 //user changes order status to cancel
-router.post('/cancel-order',cancelOrder)
+router.post('/cancel-order',checkSession,cancelOrder)
 
 export default router;

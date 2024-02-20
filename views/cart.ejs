@@ -5,6 +5,7 @@
 
 </head>
 <body>
+
 <div class="order-summary-body">
     <div class="cart">
         <h2 class="cart-title">Your Cart</h2>
@@ -25,11 +26,12 @@
 
 
     
-  <div id="order-summary-append">
+  <div id="order-summary-append" class="order-summary-append">
 
   </div>
 
   <% } %>
+
 
   <script>
           const productData = '<%= product%>' ? '<%-JSON.stringify(product)%>': null;
@@ -102,7 +104,7 @@
             <p>$${total}</p>
           </div>
         </div>
-        <a href="/cart/add-address"><button class="checkout-button">Proceed to Checkout</button></a>
+        <button class="checkout-button">Proceed to Checkout</button>
       </div>
     </div>`
           localStorage.setItem('totalPrice',totalPrice);
@@ -124,10 +126,58 @@
       </div>`
       cartList.appendChild(emptyItemDiv);
     }
+  }
+      document.addEventListener('DOMContentLoaded',function(){
+      const checkoutButton = document.querySelector(".checkout-button");
+      if(checkoutButton){
+        
+      checkoutButton.addEventListener("click",(event)=>{
+        
+        checkout(event);
+      });
+     }
+    })
 
-
-
+      
+   async function checkout(event){
+    event.preventDefault();
+    try{
+      const response = await fetch('/cart/add-address',{
+        method: 'GET',
+        
+        headers:{
+          'Content-Type' : 'Application/json',
       }
+      })
+      if(response.ok){
+        window.location.href = '/cart/add-address';
+      } else if(response.status === 401){
+            Swal.fire({
+              title: 'Session Expired',
+              text: 'Your session has expired. Please log in again.',
+              icon: 'warning',
+              confirmButtonText: 'Ok'
+            }).then((result)=>{
+                if(result.value){
+                window.location.href = "/users/login";
+                }
+              }
+            );
+            
+          }else{
+            console.log("error");
+          }
+      
+
+    }catch(error){
+      console.log(error);
+    }
+  
+}
+
+
+
+      
       
       
         async function deleteItem(event,index){
@@ -151,8 +201,25 @@
         renderCartItems();
         window.location.href="/cart";
       }
-    }
     
+    else if(response.status === 401){
+            Swal.fire({
+              title: 'Session Expired',
+              text: 'Your session has expired. Please log in again.',
+              icon: 'warning',
+              confirmButtonText: 'Ok'
+            }).then((result)=>{
+                if(result.value){
+                window.location.href = "/users/login";
+                }
+              }
+            );
+            
+          }else{
+            console.log("error");
+          }
+        
+        }
     catch(error){
           console.error(error);
         }

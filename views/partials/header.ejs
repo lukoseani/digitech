@@ -74,7 +74,7 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                      
                         <% if(locals.user) {%>
-                          <a class="dropdown-item" id="profile">Profile</a>
+                          <a class="dropdown-item" id="profile" type="button">Profile</a>
                           <a class="dropdown-item" href="/users/logout">
                           Logout
                           <% }else{ %>
@@ -116,49 +116,60 @@
     </div>
 
     <script>
+    
+
       const profileElement = document.getElementById("profile");
       if(profileElement){
-      profileElement.addEventListener("click",(event)=>{
+      profileElement.addEventListener("click",async (event)=>{
         event.preventDefault();
-        checkSession(event);
+        const sessionManager = await checkSession("/users/profile");
+        if(sessionManager){
+        window.location.href = "/users/profile";
+        }
       })
     }
       
 
-      async function checkSession(event){
+      async function checkSession(route=''){
 
         try{
-          const response = await fetch("/users/profile",{
+          const response = await fetch(route,{
             method : 'GET',
-            header: {
+            headers: {
               'Content-Type':'application/json'
             },
             credentials : 'include',
+          
           })
 
           if(response.ok){
             
-            window.location.href = "/users/profile";
-          }else{
-            
+            return true;
+          }else if(response.status === 401){
             Swal.fire({
               title: 'Session Expired',
               text: 'Your session has expired. Please log in again.',
               icon: 'warning',
               confirmButtonText: 'Ok'
             }).then((result)=>{
-              if(result.value){
+                if(result.value){
                 window.location.href = "/users/login";
+                }
               }
-            });
+            );
             
           }
+          else{
+            console.log("error");
+          }
+         
           
         }
         catch(error){
           console.log("error",error);
         }
       }
+      setInterval(checkSession, 5 * 60 * 1000);
 
   </script>
  

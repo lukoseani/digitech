@@ -34,9 +34,18 @@ const deleteCartItem = (req,res)=>{
 
 //increment cart quantity
 
-const incrementCartQuantity = (req,res)=>{
+const incrementCartQuantity = async(req,res)=>{
   const index = req.params.index;
+  const id = req.session.cart[index]._id;
+  
+  
+
+  
+  if(req.session.cart[index].quantity < 10 && req.session.cart[index].countInStock > 1)
+  {
   req.session.cart[index].quantity += 1;
+  req.session.cart[index].countInStock -= 1;
+  }
   res.redirect("/cart"); 
 }
 
@@ -46,6 +55,7 @@ const decrementCartQuantity = (req,res)=>{
   const index = req.params.index;
   if(req.session.cart[index].quantity > 1){
   req.session.cart[index].quantity -= 1;
+  req.session.cart[index].countInStock += 1;
   }
   res.redirect("/cart"); 
 }
@@ -147,7 +157,7 @@ const checkout = (req,res)=>{
  
  req.session.address = existingAddress ? existingAddress : newAddress;
  const address = existingAddress ? existingAddress : newAddress;
- return res.render("checkout.ejs",{paypalClientId:process.env.PAYPAL_CLIENT_ID,address:address,item:req.session.cart});
+ return res.render("checkout.ejs",{paypalClientId:process.env.PAYPAL_CLIENT_ID,address:address,item:req.session.cart,user:req.session.user});
 
 }
 
@@ -300,10 +310,14 @@ const handlePayment = async(req, res) => {
       province : req.session.address.province,
       postalcode: req.session.address.postalcode,
       phone:req.session.address.phone,
+      merchandise:total,
+      tax:tax,
+      shipping:shipping,
       totalPrice:"7800",
       user: user._id,
       orderNumber:generateOrderNumber(),
       totalPrice:totalPrice,
+      paymentMethod: "paypal"
      })
      
     
@@ -373,10 +387,14 @@ const totalPrice = total +shipping+ tax;
   province : req.session.address.province,
   postalcode: req.session.address.postalcode,
   phone:req.session.address.phone,
+  merchandise:total,
+  tax:tax,
+  shipping:shipping,
   totalPrice:"7800",
   user: user._id,
   orderNumber:generateOrderNumber(),
   totalPrice:totalPrice,
+  paymentMethod: "Cash On Delivery",
  })
  
 
@@ -399,7 +417,7 @@ const cancelOrder = async(req,res)=>{
   const status = "cancelled";
   try{
   const order = await Cart.findByIdAndUpdate(orderId,{status:status},{new:true});
-  
+  console.log(`order is ${order}`);
   if(!order){
     return res.status(500).json({message:"Error while cancelling the order"});
   }

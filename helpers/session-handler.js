@@ -1,11 +1,13 @@
-function requireLogin(req, res, next){
-  if (!req.user) {
-          req.session.prevUrl = req.body.url;
-          if(req.xhr) res.send({"err":"usrErr"});
-          else res.redirect('/users/login');
+
+
+const checkSession = (req,res,next)=>{
+  if(req.session && req.session.user){
+    next();
   }
-  else next();
+  else{
+    res.status(401).json({message:"session has expired"});
+  }
 }
 
-export default requireLogin;
+export {checkSession};
 

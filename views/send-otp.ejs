@@ -14,7 +14,7 @@
             <div>
              
             </div>
-            <form id="otp-submit">
+          <form id="otp-submit">
               
           
           <p class="error-message" id="message">
@@ -31,7 +31,7 @@
                 </div>
                 <div class="otp-button-div">
                 <div>
-                  <button class="resend-button" id="resend-button" onclick="resendOtp(); event.preventDefault();" disabled>Resend</button>
+                  <button class="resend-button" id="resend-button" disabled>Resend</button>
                 </div>
                 <div>
                <button type="submit" class="btn submit-button">Verify</button>
@@ -49,6 +49,8 @@
 
   
   <script>
+
+   
   let countdown;
   startTimer(30);
    document.getElementById('otp-submit').addEventListener('submit', function (event) {
@@ -56,7 +58,11 @@
         validateOtp();
     });
 
-  
+    const resendButton = document.getElementById("resend-button");
+    resendButton.addEventListener("click",(event)=>{
+      event.preventDefault();
+      resendOtp(); 
+    });
 
 async function validateOtp() {
   

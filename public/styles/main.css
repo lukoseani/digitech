@@ -38,8 +38,18 @@ body{
 .submit-button{
   color:white;
   background-color: rgb(68, 3, 70);
-  margin-top: 21px;
-  margin-bottom:21px;
+  padding-left:30px;
+  padding-right:30px;
+  margin:21px;
+  
+}
+.delete-address-button{
+  color:rgb(68, 3, 70);
+  background-color: white;
+  border:solid 1px rgb(68, 3, 70);
+  padding-left:30px;
+  padding-right:30px;
+  margin:20px;
 }
 
 .menu-grid{

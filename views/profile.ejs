@@ -1,17 +1,17 @@
 <%- include("partials/header.ejs") %>
 <body>
-  <div class="container mt-5 mb-5">
+  <div class="profile-container container mt-5 mb-5">
     <div class="row  outer-body">
       <div class="col-sm-8">
-        <div class="card register-body">
-          <div class="card-body ">
+        <div>
+          <div class="card-body">
 
             <h2 class="profile-title">Your Profile</h2>
             <div class="confirm-details">
               <div class="profile">
               <div class="profile-field">Name</div>
               <div><%= user.name %></div>
-              <div><a class="name-button" href="/users/edit-name">Edit</a></div>
+              <div><button class="name-button" id="name-edit">Edit</button></div>
               </div>
               
               <div class="profile">
@@ -25,66 +25,87 @@
               <div><%= user.email %></div><br>
               <div>Phone</div>
               <div><%= user.phone %></div>
-              <div><a class="address-button" href="/users/edit-user">Edit</a></div>
+              <div><button class="address-button" id="phone-edit">Edit</button></div>
             </div>
               
           </div>
 
-            <div class="profile">
-              <div class="profile-field">Address</div>
-              <div>
+          <div class="profile">
+          <div class="profile-field">Addresses</div>
+          <div></div>
+          <div><button class="address-button" id="address-add">Add</button></div>
+          </div>
+            
               <% if(locals.user.address){ %>
-              <%= user.address.unit %> <%= user.address.addressLine1%> <%= user.address.addressLine2 %><br>
-              <%= user.address.city %> <%= user.address.province %><br> <%= user.address.postalcode %>
+                
+                
+                <% locals.user.address.forEach((address,index)=>{%>
+                  <div class="profile">
+                    <div>Address <%= index+1 %></div>
+                    <div>
+                  
+              <%= address.unit %> <%= address.addressLine1%> <%= address.addressLine2 %><br>
+              <%= address.city %> <%= address.province %><br> <%= address.postalcode %>
               
             </div>
-              <div><a class="address-button" href="/users/address">Edit</a></div>
-              <% }else{%>
-                </div>
-                <div><a class="address-button" href="/users/address">Add</a></div>
-                <% } %>
+              <div><button class="address-button" id="address-edit" value="<%= address._id %>">Edit</button></div>
+              
+              
               </div>
+                
+                
+              </div>
+              <% })  %>
+              <% }%>
 
               <div class="profile">
                 <div class="profile-field">Update Password</div>
                 <div></div>
-                <div><a class="address-button" href="/users/get-password-form">Update</a></div>
+                <div><button class="password-button" id="update-password">Update</button></div>
               </div>
 
 
               
-              <div class="profile-field">Order History</div>
+              
               
               <% if(locals.message) {%>
                 <div style="color:green"><%= message %></div>
                 <% } %>
-              <% if(locals.items){%>
-                
-                <% items.forEach(item=>{%>
-                  <% if(item.status != 'cancelled'){ %>
-                  <div class="order-grid">
-                  <div class="order-div">Order #<%= item.orderNumber %></div>
-                  <div class="order-div"><%= item.dateOrdered.toDateString() %></div>
-                  <input type="hidden" class="itemId" value="<%= item._id %>">
-                  <div><button  class="cancel-button" data-itemid="<%= item._id %>">Cancel</button></div>
+              <% if(locals.orders){%>
+                <div class="profile-field">Order History</div>
+                <% orders.forEach(order=>{%>
+                  <% if(order.status !== 'cancelled'){ %>
+                    <div><%= order.phone %></div>
+                  <div class="profile">
+                  <div class="profile">Order <button class="order-number-button" id="order-number-btn" value="<%= order.orderNumber %>"> #<%= order.orderNumber %></button><div id="order-num" hidden></div></div>
+                  <div class="order-div"><%= order.dateOrdered.toDateString() %><input type="hidden" class="itemId" value="<%= order._id %>"></div>
+                  
+                  <div><button  class="cancel-button" data-itemid="<%= order._id %>">Cancel</button></div>
                 </div>
-              
-                  <% item.cartItems.forEach(cartItem=>{ %>
-                <div class="item">
-                  <% if (cartItem.product && cartItem.product.image) { %>
-                  <div ><img class="item-image" src="<%= cartItem.product.image %>"></div>
+                
+                <% order.products.forEach(productArr=>{ %>
+                  
+                  <% productArr.forEach(product=>{ %>
+                    
+                <div class="profile">
+                  <% if (product && product.image) { %>
+                  <div ><img class="item-image" src="<%= product.image %>"></div>
                   <div>
-                    <p class="item-name"><%= cartItem.product.name %></p>
+                    <p class="item-name"><%= product.name %></p>
                     <% } %>
+                    <% order.cartItems.forEach(cartItem=>{ %>
                     <p class="qty">Qty: <%= cartItem.quantity %></p>
-                    <p class="qty"><%= item.status %></p>
+                    <% }) %>
+                    <p class="qty"><%= order.status %></p>
                     
                   </div>
-                  
+                  <div></div>
                 </div>
-                
                 <% }) %>
-                <% } %>
+                <% }) %>
+                <% }%>
+                  
+                
                 <% }) %>
                 <% } %>
               
@@ -97,29 +118,96 @@
 
  <script>
 
+  const nameEditButton = document.getElementById("name-edit");
+  nameEditButton.addEventListener("click",async function(event){
+    event.preventDefault();
+    const sessionManager = await checkSession('/users/edit-name');
+    if(sessionManager){
+      window.location.href = "/users/edit-name";
+    }
+  })
+
+  const phoneEditButton = document.getElementById("phone-edit");
+  phoneEditButton.addEventListener("click",async function(event){
+    event.preventDefault();
+    const sessionManager = await checkSession('/users/edit-user');
+    if(sessionManager){
+      window.location.href = "/users/edit-user";
+    }
+  })
+
+  
+  const addressEditButton = document.querySelectorAll("#address-edit");
+  
+  if(addressEditButton){
+  
+  addressEditButton.forEach(editButton=>{
+    const addressId = editButton.value;
+    editButton.addEventListener("click",async function(event){
+    event.preventDefault();
+    const sessionManager = await checkSession(`/users/address-edit`);
+    if(sessionManager){
+      window.location.href = `/users/address-edit?id=${addressId}`;
+    }
+  })
+  })
+}
+
+
+  
+
+
+  const addressAddButton = document.getElementById("address-add");
+  addressAddButton.addEventListener("click",async function(event){
+    event.preventDefault();
+    const sessionManager = await checkSession('/users/address-add');
+    if(sessionManager){
+      window.location.href = "/users/address-add";
+    }
+  })
+
+
+  const updatePasswordButton = document.getElementById("update-password");
+  updatePasswordButton.addEventListener("click",async function(event){
+    event.preventDefault();
+    const sessionManager = await checkSession('/users/get-password-form');
+    if(sessionManager){
+      window.location.href = '/users/get-password-form';
+    }
+  })
+
+ 
+
+
+
+
   const cancelButtons = document.querySelectorAll(".cancel-button");
 
   cancelButtons.forEach(cancelButton=>{
     
     cancelButton.addEventListener("click",function(event){
       event.preventDefault();
-      const itemId = cancelButton.getAttribute("data-itemid")
-      
-
-      
+      const itemId = cancelButton.getAttribute("data-itemid");
         cancelOrder(itemId);
-      
-     
-      
-      
-     
   })
   
   })
   async function cancelOrder(orderId) {
     
-    const confirm = window.confirm(`Are you sure want to cancel this order`);
-    if(confirm){
+    
+        Swal.fire({
+          title : 'Cancel',
+          text: 'Are you sure want to cancel this order?',
+          icon:'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes',
+          cancelButtonText : 'No'
+        }).then((result)=>{
+          if(result.isConfirmed){
+            cancelMyOrder(orderId);
+          }
+        })
+    async function cancelMyOrder(orderId){
       try{
         const response = await fetch('/cart/cancel-order',{
         method: 'POST',
@@ -133,10 +221,9 @@
       })
 
       if(response.ok){
-        const responseData = await response.json();
-        const message = responseData.message;
-        window.alert(message);
+        
         window.location.href = '/users/profile';
+        console.log(response);
       }
       }
       catch(error){
@@ -144,6 +231,58 @@
       }
     }
   }
+
+  const orderNumberBtn = document.querySelectorAll("#order-number-btn");
+  
+  orderNumberBtn.forEach(btn=>{
+  btn.addEventListener("click",async(event)=>{
+    event.preventDefault();
+    const orderNumber = btn.value;
+    
+    
+    try{
+      const response = await fetch(`/users/order-details?orderNumber=${orderNumber}`,{
+        method:'GET',
+        headers:{
+          'Content-Type': 'application/json',
+          
+        },
+        credentials : 'include',
+        
+        
+      })
+      
+      if(response.ok){
+        window.location.href = `/users/order-details?orderNumber=${orderNumber}`;
+        
+      }
+      
+
+      else if(response.status === 401){
+            Swal.fire({
+              title: 'Session Expired',
+              text: 'Your session has expired. Please log in again.',
+              icon: 'warning',
+              confirmButtonText: 'Ok'
+            }).then((result)=>{
+                if(result.value){
+                window.location.href = "/users/login";
+                }
+              }
+            );
+            
+          }
+          else{
+            console.log("Error");
+          }
+
+    }
+    catch(error){
+      console.log(error);
+    }
+  
+  })
+})
 
  </script>
 

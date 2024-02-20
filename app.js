@@ -5,8 +5,7 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import authJwt from './helpers/jwt.js'
-import errorHandler from './helpers/error-handler.js'
-import requireLogin from './helpers/error-handler.js'
+import errorHandler from './helpers/error-handler.js';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import session from 'express-session';
@@ -71,7 +70,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static('public'));
 app.use(authJwt());
 app.use(errorHandler);
-app.use(requireLogin);
 app.use(session({secret:"mysecret",cookie:{maxAge:12 * 60 * 60 * 10000}}));
 
 app.use(flash());

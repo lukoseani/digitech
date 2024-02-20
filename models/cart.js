@@ -33,8 +33,24 @@ name:{
   type:String,
   required:true,
  },
+ merchandise:{
+  type:Number,
+  default:'',
+ },
+ shipping:{
+  type:Number,
+  default:''
+ },
+ tax:{
+  type:Number,
+  default:'',
+ },
  totalPrice:{
   type:Number,
+  default:'',
+},
+paymentMethod:{
+  type:String,
   default:'',
 },
 status:{

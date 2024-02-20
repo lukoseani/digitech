@@ -5,7 +5,7 @@ import {User} from '../models/users.js';
 import {Category} from '../models/category.js';
 import mongoose from 'mongoose';
 import multer from 'multer';
-import generateNonce from '../helpers/generateNonce.js'
+import {checkSession} from '../helpers/session-handler.js';
 import { getUserProducts,getProductsSortedByPrice } from '../controllers/productController.js';
 
 

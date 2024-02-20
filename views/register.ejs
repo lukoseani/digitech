@@ -19,7 +19,7 @@
                 <% } %>
                 </p>
             </div>
-            <form onsubmit = "event.preventDefault(); registerUser();">
+            <form id="register-form">
               <div  class="form-group">
                 <label for="name">Name</label>
                 <input type="text" class="form-control" id="name" placeholder="Name">
@@ -52,7 +52,12 @@
   </div>
 
   <script>
-    async function registerUser() {
+    const registerForm = document.getElementById("register-form");
+    registerForm.addEventListener("submit",(event)=>{
+      event.preventDefault(); 
+      registerUser(event);
+    })
+    async function registerUser(event) {
       event.preventDefault();
       
       const name = document.getElementById("name").value;

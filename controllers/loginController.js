@@ -7,6 +7,8 @@ import {OTP} from '../models/otpModel.js';
 import {Address} from '../models/address.js';
 import {Cart} from '../models/cart.js';
 import {Product} from '../models/product.js';
+import mongoose from 'mongoose';
+
 
 
 const adminLogin = async(req,res)=>{
@@ -239,7 +241,7 @@ if(password !== confirmPassword){
     loggedIn:false,
     isBlocked:false,
   };
-
+  console.log(req.session.user);
   return res.status(200).json({message:"successfully send otp"});
 
   }
@@ -259,19 +261,129 @@ const logout = (req,res)=>{
 
 const getProfile = async(req,res)=>{
   try{
-    if(!req.session || !req.session.user){
+ const user = await User.aggregate([
+  {
+    $match:{_id:new mongoose.Types.ObjectId(req.session.user._id)}
+  },
+  
+  {
+    $lookup: {
+      from: "addresses",
+      localField: "address",
+      foreignField: "_id",
+      as: "address",
+    },
+  },
+  {
+    $unwind:"$address"
+  },
+  {
+    $limit:2
+  },
+  {
+    $group: {
+      _id: "$_id",
+      name:{
+        $first:"$name"
+      },
+      email:{
+        $first:"$email"
+      },
+      passwordHashed:{
+        $first:"$passwordHashed"
+      },
+      phone:{
+        $first:"$phone",
+      },
+      isAdmin:{
+        $first:"isAdmin"
+      },
+      isBlocked:{
+        $first:"isBlocked"
+      },
+      address:{
+        $push:"$address"
+      }
       
       
-      return res.status(500).json({message:"Session has timed out"})
+    },
+  }
+]
+)
+const userDetails = user[0] ? user[0] : {};
+
+  //const user = await User.findById(req.session.user._id).populate('address');
+  const order = await Cart.aggregate([
+    {
+    $match:{user:new mongoose.Types.ObjectId(req.session.user._id)}
+    },
+    
+
+    {
+      $unwind:"$cartItems"
+    },
+    {
+      $lookup: {
+        from: 'cartitems',
+        localField: 'cartItems',
+        foreignField: '_id',
+        as: 'cartItems'
+      }
+    },
+    {
+      $lookup:{
+        from:'products',
+        localField:'cartItems.product',
+        foreignField:'_id',
+        as:'products'
+      }
+    },
+    {
+      $lookup:{
+        from:'users',
+        localField:'user',
+        foreignField:'_id',
+        as:'user'
+      }
+    },
+    {
+      $sort:{
+        dateOrdered:-1
+      }
+    },
+    {
+      $limit:4
+    },
+    {
+      $group: {
+        _id: "$_id",
+        orderNumber: {
+          $first: "$orderNumber",
+        },
+        cartItems: {
+          $first: "$cartItems",
+        },
+        products: {
+          $push: "$products",
+        },
+        user: {
+          $first: "$userDetails",
+        },
+        status:{
+          $first:"$status",
+        },
+        dateOrdered: {
+          $first: "$dateOrdered",
+        },
+      },
     }
-  const user = await User.findById(req.session.user._id).populate('address');
-  const order = await Cart.find({ user: req.session.user._id }).populate({
-    path: 'cartItems',
-    populate:{
-      path:'product',
-    }
-  }).populate('user');
-  res.render("profile.ejs",{user:user,items:order});
+   
+   
+
+  ])
+  console.log("address is:");
+  console.log(userDetails.address);
+  res.render("profile.ejs",{user:userDetails,orders:order});
 }
 catch(error){
   console.log(`error: ${error}`);
@@ -281,7 +393,24 @@ catch(error){
 
 //get address form
 
-const getAddress = async(req,res)=>{
+const getEditAddress = async(req,res)=>{
+ let address;
+  try{
+  const user = await User.findById(req.session.user._id).populate('address');
+  console.log(`user: ${user}`);
+  address = await Address.findById(req.query.id)
+  console.log(`address ${address}`);
+  }catch(error){
+    console.log(error);
+    return res.status(400).json({message:'Unable to update'});
+  }
+  res.render("address-edit.ejs",{address:address});
+
+}
+
+const getAddAddress = async(req,res)=>{
+  
+  
   res.render("address.ejs");
 
 }
@@ -290,7 +419,7 @@ const getAddress = async(req,res)=>{
 
 const addAddress = async(req,res)=>{
 
-  console.log("reached client-side");
+  
   console.log(req.body.address);
   const {addressLine1,addressLine2,city,province,postalcode,country} = req.body.address;
 
@@ -298,25 +427,114 @@ const addAddress = async(req,res)=>{
     
     return res.status(400).json({message:'All fields are required'});
   }
-  if(!req.session){
-    return res.status(400).json({message:'Unable to update'});
-  }
+  if(!req.session.user || !req.session){
+    console.log("session expired");
+    return res.status(400).json({message:"unable to update"})
+  } 
+
+  
 
   let address = new Address({
     addressLine1:addressLine1,
     addressLine2:addressLine2,
     city:city,
     province:province,
+    country:country,
     postalcode:postalcode,
   })
-  console.log(address);
-  address = await address.save();
-  const user = await User.findByIdAndUpdate(req.session.user._id,{address:address});
+  
+  try{
+  const user = await User.findById(req.session.user._id);
+  const addressSaved = await address.save();
+  user.address.push(addressSaved._id);
+  await user.save();
+  user.address = [];
+  }catch(error){
+    console.log(error);
+    return res.status(500).json({message:"unable to update"});
+  }
+  
+  //const addresses = user.address ? user.address : [];
+  //address = await user.address.save();
+  //const user = await User.findByIdAndUpdate(req.session.user._id,{address:address});
+  res.status(200).json({message:'success'});
+
+}
+
+//delete address
+
+const deleteAddress =  async(req,res)=>{
+  const addressId = req.body.addressId;
+
+  try{
+    await Address.findByIdAndDelete(addressId)
+  }
+  catch(error){
+    console.log(error);
+    return res.status(500).json({message:"unable to update"});
+  }
+  res.status(200).json({message:'success'});
+}
+
+//edit address
+
+const editAddress = async(req,res)=>{
+
+  
+  
+  const {addressLine1,addressLine2,city,province,postalcode,country} = req.body.address;
+
+  if(!addressLine1 || !city || !province || !postalcode || !country){
+    
+    return res.status(400).json({message:'All fields are required'});
+  }
+  if(!req.session.user || !req.session){
+    console.log("session expired");
+    return res.status(400).json({message:"unable to update"})
+  } 
+
+  
+
+  let address = new Address({
+    addressLine1:addressLine1,
+    addressLine2:addressLine2,
+    city:city,
+    province:province,
+    country:country,
+    postalcode:postalcode,
+  })
+  const addressId=req.body.addressId;
+  
+  
+  try{
+    
+  let updatedAddress = await Address.findByIdAndUpdate(addressId,
+    {addressLine1:address.addressLine1,
+    addressLine2:address.addressLine2,
+    city:address.city,
+    province:address.province,
+    country:address.country,
+    postalcode:address.postalcode,
+    }
+    )
+    
+  
+  if(!updatedAddress){
+    return res.status(500).json({message:"unable to update"});
+  }
+  
+}
+    catch(error){
+      console.log(error);
+      return res.status(500).json({message:"unable to update"});
+    }
   res.status(200).json({message:'success'});
 
 }
 
 const getNameEditForm = async(req,res)=>{
+
+ 
   const user = await User.findById(req.session.user._id);
   res.render("name-edit.ejs",{user:user});
 }
@@ -331,7 +549,7 @@ const editName = async(req,res)=>{
     return res.status(400).json({message:"Name cannot be updated"});
   }
 
-  if(!req.session.user){
+  if(!req.session.user || !req.session){
     console.log("session expired");
     return res.status(400).json({message:"unable to update the name"})
   } 
@@ -343,6 +561,7 @@ const editName = async(req,res)=>{
 //get user edit form
 
 const getEditForm = async(req,res)=>{
+  
   const user = await User.findById(req.session.user._id);
   res.render("user-edit.ejs",{user:user});
 }
@@ -419,6 +638,22 @@ const updatePassword = async (req, res) => {
   }
 };
 
+//get order details screen
+
+const getOrderDetails = async(req,res) => {
+  const {orderNumber} = req.query;
+  console.log(orderNumber);
+  const order = await Cart.find({orderNumber:orderNumber}).populate({
+    path:'cartItems',
+    populate:{
+      path:'product'
+    }
+  }).populate('user');
+  
+  const user = req.session.user;
+  console.log(`order: ${user}`);
+  res.render("order-details.ejs",{user:user,order:order});
+}
 
 
 
@@ -427,4 +662,5 @@ const updatePassword = async (req, res) => {
 
 
 
-export {adminLogin,adminLoginView,adminHomeView,userLoginView,registerView,userLogin,registerUser,logout,getProfile,addAddress,getAddress,getEditForm,editUser,getNameEditForm,editName,getPasswordForm,updatePassword};
+
+export {adminLogin,adminLoginView,adminHomeView,userLoginView,registerView,userLogin,registerUser,logout,getProfile,addAddress,getAddAddress,getEditAddress,getEditForm,editUser,getNameEditForm,editName,getPasswordForm,updatePassword,getOrderDetails,editAddress,deleteAddress};

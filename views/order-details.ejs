@@ -1,0 +1,77 @@
+<%- include("partials/header.ejs") %>
+<body>
+  <div class="container mt-5 mb-5">
+    <div class="row  outer-body">
+      <div class="col-sm-8">
+        <div class="card register-body">
+          <div class="card-body ">
+
+           
+              
+              <% if(locals.order) {%>
+               
+                <% order.forEach(o=>{%>
+                  <p class="order-title">Order #<%= o.orderNumber %></p>
+                  <p class="order-date">Date of order: <%= o.dateOrdered.toDateString() %></p>
+                <p class="order-status"><%= o.cartItems.length %> Item(s) <%= o.status %> </p>
+                
+                
+                <% o.cartItems.forEach(cartItem=>{%>
+                  <div class="product-details-div">
+                  <div class="img-div"><img class="product-details-img" src="<%= cartItem.product.image  %>"></div>
+                  <div class="product-details">
+                    <p class="item-name"><%= cartItem.product.name %></p>
+                    <p>Price: $<%= cartItem.product.price %></p>
+                  </div>
+                  </div>
+                    
+                  <% })  %>
+                  <div class="product-details-div">
+                  <div class="shipping-address-title">Shipping Address</div>
+                  <div class="shipping-address"><%= o.shippingAddress1 %>, <%= o.shippingAddress2 %>,<br>
+                    <%= o.city %>, <%= o.province %><br>
+                    <%= o.postalcode %><br>
+                  Ph: <%= o.phone %>
+                  </div>
+                </div>
+                <div><span class="order-summary-title">Order Summary</span></div>
+                <div class="product-details-div">
+                  
+                    <div class="order-summary">
+                    <p>Merchandise:</p>
+                    <p>Shipping:</p>
+                    <p>Tax:</p>
+                    <p>Order Total: </p>
+                  </div>
+                  
+                  
+                      <div class="order-summary">
+                        <p>$ <%= o.merchandise %></p>
+                        <p>$ <%= o.shipping %></p>
+                        <p>$ <%= o.tax %></p>
+                        <p class="order-price">$ <%= o.totalPrice %> </p>
+                      </div>
+                  
+                </div>
+                  <div class="product-details-div">
+                    <div class="payment-method-title">Method of Payment</div>
+                    <div class="payment-method-summary"><%= o.paymentMethod %></div>
+                  </div>
+                <% }) %>
+                
+                <% } %>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <script>
+
+
+
+ </script>
+
+</body>
+</html>
