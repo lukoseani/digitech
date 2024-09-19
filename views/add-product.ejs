@@ -11,23 +11,25 @@
         <div class="card">
           <div class="card-body">
 
-
+            <p class="message" id="form-message"></p>
             <form  enctype="multipart/form-data"  id="add-product-form">
               <div  class="form-group">
                 <label for="name">Product Name</label>
-                <input type="text" class="form-control" id="name" placeholder="Product Name">
+                <input type="text" class="form-control required" id="name" placeholder="Product Name">
+                <p id="name-message" class="message"></p>
               </div>
               <div class="form-row">
                 
                 <div class="form-group col-md-6">
                   <label for="brand">Brand Name</label>
-                  <input type="text" class="form-control" id="brand" placeholder="Brand Name">
+                  <input type="text" class="form-control required" id="brand" placeholder="Brand Name">
+                  <p id="brand-message" class="message"></p>
                 </div>
                 <div class="form-group col-md-6">
                   <label for="category">Category</label>
                   
                     <% if(locals.categories){ %>
-                      <select class="form-control" name="Category" id="category">
+                      <select class="form-control required" name="Category" id="category" >
                         <option value="" selected disabled hidden>Select a Category</option>
                         <% categories.forEach((category)=>{ %>
                           <option value="<%= category._id %>"><%= category.name %></option>
@@ -40,7 +42,8 @@
                
                 <div class="form-group col-md-6">
                   <label for="price">Price</label>
-                  <input type="text" class="form-control" id="price" placeholder="Price">
+                  <input type="text" class="form-control required" id="price" placeholder="Price">
+                  <p id="price-message" class="message"></p>
                 </div>
                 
 
@@ -49,7 +52,8 @@
                 <div class="form-group col-md-6">
 
                   <label for="countInStock">Count in Stock</label>
-                  <input type="text" class="form-control" id="countInStock" placeholder="Stock">
+                  <input type="text" class="form-control required" id="countInStock" placeholder="Stock">
+                  <p id="count-message" class="message"></p>
                 </div>
 
                
@@ -74,14 +78,17 @@
 
               <div class="mb-3">
                 <label for="image" class="form-label">Upload Image</label>
-                <input class="form-control" type="file" accept="png,jpg,jpeg" id="image">
+                <input class="form-control required" type="file" accept="png,jpg,jpeg" id="image">
+                <p id="image-message" class="message"></p>
               </div>
 
               <div class="main-container" hidden>
+                <div class="img-display-container">
                 <div class="img-container">
-                    <img id="image-preview" src="" class="input-img">
+                    <img id="image-preview" src="" class="input-img" >
                 </div>
                 <button id="btn-crop">Crop</button>
+              </div>
                 <div class="cropped-container">
                     <img src="" id="output">
                 </div>
@@ -91,6 +98,7 @@
 
               <div class="mb-3">
                 <label for="images" class="form-label">Upload Images</label>
+                <p id="images-message" class="message"></p>
                 <input class="form-control" type="file" accept='image/*' name = "images" id="images" multiple >
                 <div id="image-info"></div>  
               </div>
@@ -102,7 +110,7 @@
              
             
 
-              <button type="submit" class="btn submit-button">Add</button>
+              <button type="submit" class="btn submit-button" disabled>Add</button>
             </form>
           </div>
         </div>
@@ -116,46 +124,64 @@
 
 const formData = new FormData();
 
-document.querySelector("#images").addEventListener("change",function(event){
-  
+const imageElements = document.querySelectorAll("#images");
+imageElements.forEach(element=>{
+  element.addEventListener("change",function(event){
   upload(this.files);
+})
 })
 
 function upload(images){
       const imageInfoContainer = document.getElementById("image-info");
       imageInfoContainer.innerHTML = "";
       const imageContainer = document.getElementById("images-preview-div");
+      let imageMessageElement = document.getElementById("images-message");
       for (let i = 0; i < images.length; i++) {
+        
+        if(!formEnable(i)){
+          imageMessageElement.textContent = "Invalid Image Type";
+          return;
+        }
+      }
+      for (let i = 0; i < images.length; i++) {
+        imageMessageElement.textContent = "";
         const imageInfoDiv = document.createElement("div");
         imageInfoDiv.innerHTML = `Image ${i + 1} : ${images[i].name} <button class="delete-image" data-index=${i} type="button"><a> Delete</a></button>`;
         imageInfoContainer.appendChild(imageInfoDiv);
 
         const newImageContainer = document.createElement("div");
         newImageContainer.innerHTML = `<div class="main-container-images" hidden>
+                <div id="imgs-display-container-${i}" class="img-display-container">
                 <div class="img-container">
                   <img id="image-preview-${i}" class="input-img">
                 </div>
                 <button class="btn-crop" data-index=${i}>Crop</button>
-                <div class="cropped-container">
-                  <img id="output-${i}">
+                </div>
+                <div id="cropped-container-${i}" class="cropped-containers">
+                  <img id="output-${i}" class="outputs">
                 </div>
               </div>`;
 
               imageContainer.appendChild(newImageContainer);
-        createCropper(i, images[i]);
+              createCropper(i, images[i]);
+              
       }
       setupDeleteButtonListeners();
+      
     }
+    
     setupDeleteButtonListeners();
 
     function createCropper(index, image) {
       const inputImage = document.getElementById(`image-preview-${index}`);
       const btnCrop = document.querySelector(`.btn-crop[data-index="${index}"]`);
       const outputImage = document.getElementById(`output-${index}`);
-      const mainContainer = document.querySelectorAll('.main-container-images');
-      mainContainer.forEach(container => {
-        container.removeAttribute("hidden");
-      });
+      const croppedContainer = document.getElementById(`cropped-container-${index}`);
+      const mainContainer = document.querySelectorAll(`.main-container-images`);
+      const displayContainer = document.getElementById(`imgs-display-container-${index}`);
+      mainContainer.forEach((container,i)=>{
+      container.removeAttribute("hidden");
+    })
 
       const reader = new FileReader();
 
@@ -170,24 +196,32 @@ function upload(images){
           },
         });
 
+        
+
         btnCrop.addEventListener("click", function (e) {
           e.preventDefault();
           if (!cropper.getImageData()) {
             console.error(`Image ${index} not loaded yet. Please wait for the image to load.`);
             return;
           }
-
+          
           const croppedImage = cropper.getCroppedCanvas();
 
           if (croppedImage) {
+            formEnable(index);
             const originalFileExtension = image.name.split('.').pop().toLowerCase();
             croppedImage.toBlob(function (blob) {
               formData.append(`image-${index}`, blob, `croppedImage-${index}.${originalFileExtension}`);
             }, 'image/png');
             outputImage.src = croppedImage.toDataURL('image/png');
-            const croppedContainer = document.querySelector(`#output-${index}`);
+            
               if (croppedContainer) {
+                
+                
+                displayContainer.setAttribute('hidden','true');
                 croppedContainer.style.display = 'flex';
+                
+                
               } else {
                 console.error(`Cropped container not found for image ${index}.`);
               }
@@ -196,16 +230,12 @@ function upload(images){
             console.error(`No valid cropping area for image ${index}. Please select a cropping area before clicking "Crop".`);
           }
         });
+      
       };
 
       reader.readAsDataURL(image);
+      
     }
-
-
-
-
-
-
 
 
     
@@ -221,6 +251,7 @@ function upload(images){
     ready: function () {
       // This function will be called when the Cropper.js instance is ready.
       console.log('Cropper.js instance is ready.');
+      
     },
   });
 
@@ -241,7 +272,9 @@ function upload(images){
       formData.append('image',blob,`croppedImage.${originalFileExtension}`);
     },'image/png')
       document.getElementById('output').src = croppedImage.toDataURL('image/png');
+      document.querySelector('.img-display-container').setAttribute('hidden','true');
       document.querySelector('.cropped-container').style.display = 'flex';
+      formEnable();
     } else {
       console.error('No valid cropping area. Please select a cropping area before clicking "Crop".');
     }
@@ -253,25 +286,38 @@ function upload(images){
 
    
 
-    
+   const allowedExtension = ['image/jpeg', 'image/jpg', 'image/png','image/gif','image/bmp'];
 
     const image = document.getElementById("image");
+   
     image.addEventListener("change",function(event){
       event.preventDefault();
-      const input = event.target;
-      cropImages(event);
+        const input = event.target;
+        const btn = document.querySelector('.submit-button');
+      
       
       if(input.files && input.files[0]){
+        const type = input.files[0].type;
+        if(allowedExtension.indexOf(type)>-1){
+        cropImages(event);
         const reader = new FileReader();
         reader.onload = function(e){
           e.preventDefault();
           const previewImage = document.getElementById("image-preview");
           previewImage.src = e.target.result;
+          
         }
 
         reader.readAsDataURL(input.files[0]);
-        
+        document.getElementById("image-message").textContent = "";
       }
+      else{
+        event.preventDefault();
+        document.getElementById("image-message").textContent = "Selected Image Type is Invalid";
+    }
+      
+  }
+    
     })
 
 function setupDeleteButtonListeners() {
@@ -309,8 +355,201 @@ function setupDeleteButtonListeners() {
         upload(imagesInput.files);
 }
 
+  const nameElement = document.getElementById("name");
+  const brandElement  = document.getElementById("brand");
+  const priceElement = document.getElementById("price");
+  const countElement =  document.getElementById("countInStock");
+
+
+   
+   
+  nameElement.addEventListener("input",(event)=>{
+    
+    event.preventDefault();
+    const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+    let name = nameElement.value;
+    name = name.trim();
+    if(name == "" || specialCharacters.test(name)){
+      event.preventDefault();
+      const message = "Invalid Name";
+      document.getElementById(`name-message`).textContent = message;
+      
+
+    }else{
+      document.getElementById(`name-message`).textContent = "";
+    }
+})
+
+brandElement.addEventListener("input",(event)=>{
+  
+    event.preventDefault();
+    const specialCharacters = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+    let brandName = brandElement.value;
+    
+    brandName = brandName.trim();
+    if(brandName == "" || specialCharacters.test(brandName)){
+      event.preventDefault();
+      const message = "Invalid Name";
+      document.getElementById(`brand-message`).textContent = message;
+      
+
+    }else{
+      document.getElementById(`brand-message`).textContent = "";
+    }
+});
+
+priceElement.addEventListener("input",(event)=>{
+  event.preventDefault();
+  let price = document.getElementById("price").value;
+  price = price.trim();
+  const decimalExp = /^[0-9]*\.?[0-9]+$/;
+  if(decimalExp.test(price)){
+    document.getElementById(`price-message`).textContent = "";
+  }
+  else{
+    event.preventDefault();
+    document.getElementById(`price-message`).textContent = "Invalid Price";
+  }
+  
+});
+
+  countElement.addEventListener("input",(event)=>{
+    event.preventDefault();
+    const count = document.getElementById("countInStock").value;
+    const countExp = /^\d+$/
+    if(countExp.test(count)){
+      document.getElementById("count-message").textContent = "";
+    }
+    else{
+      document.getElementById("count-message").textContent = "Invalid Count";
+    }
+  });
+  
+    nameElement.addEventListener("keyup",(event)=>{
+      event.preventDefault();
+      formEnable();
+    });
+
+    brandElement.addEventListener("keyup",(event)=>{
+      event.preventDefault();
+      formEnable();
+    });
+
+    priceElement.addEventListener("keyup",(event)=>{
+      event.preventDefault();
+      formEnable();
+    });
+    countElement.addEventListener("keyup",(event)=>{
+      event.preventDefault();
+      formEnable();
+    });
+
+    document.getElementById("category").addEventListener("mouseup",(event)=>{
+      event.preventDefault();
+      formEnable();
+
+    });
+
+    document.getElementById("image").addEventListener("change",(event)=>{
+      event.preventDefault();
+      formEnable();
+    });
+
+   
+   
+    
+    
+    
+    const croppedOutputs = []; 
+  function formEnable(index=""){
+    
+    const inputs = document.getElementsByClassName("required");
+    const btn = document.querySelector('.submit-button');
+    const imageInput = document.getElementById("image");
+    let croppedOutput =  document.getElementById('output');
+    const imagesInput = document.getElementById(`images`);
+      
+     if(document.getElementById(`output-${index}`)){
+      croppedOutputs.push(document.getElementById(`output-${index}`));
+     }
+      
+      
+    
+    
+    
+    let imagesMessages = document.getElementById("images-message");
+    let message = imagesMessages.textContent;
+    let isValid = true;
+    let imagesFlag = true;
+    
+
+    for(let i=0;i<inputs.length;i++){
+      let changedInput = inputs[i];
+
+      if(changedInput.value.trim() === "" || changedInput.value === null){
+        isValid = false;
+        break;
+      }
+    }
+
+    // single image validation
+    if(imageInput && imageInput.files.length === 0){
+      isValid = false;
+    }
+    if(imageInput && imageInput.files.length > 0){
+    isValid = false;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png','image/gif','image/bmp'];
+    const fileType = imageInput.files[0].type;
+    if(!allowedTypes.includes(fileType)){
+      isValid = false;
+      imagesFlag = false;
+    }
+    }
+    if(!croppedOutput.src || croppedOutput.src === 'http://localhost:4000/admin/add-product'){
+      isValid = false;
+    }
+    
+    //multiple images validation
+
+    if(imagesInput && imagesInput.files.length === 0){
+      isValid = false;
+    }
+    if(index !== ""){
+    if(imagesInput && imagesInput.files.length > 0){
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png','image/gif','image/bmp'];
+    const fileType = imagesInput.files[index].type;
+    if(!allowedTypes.includes(fileType)){
+      isValid = false;
+      imagesFlag = false;
+    }
+    }
+  }
+  
+    if(croppedOutputs.length > 0){
+      console.log("called2");
+      console.log(croppedOutputs);
+      croppedOutputs.every(output=>{
+      if(!output.src ){
+      console.log("called3");
+      isValid = false;
+    }
+    })
+    croppedOutput = [];
+    }
+    
+    btn.disabled = !isValid;
+    return imagesFlag;
+    
+  }
+
+   
+
+      
+
+
     const addProductForm = document.querySelector("#add-product-form");
     addProductForm.addEventListener("submit",function(event){
+      event.preventDefault();
       addProduct(event)
     })
 
@@ -326,6 +565,11 @@ function setupDeleteButtonListeners() {
       const countInStock = document.getElementById("countInStock").value;
       const images = document.getElementById("images").files;
       
+      if(name && brand && category && price && productDetails && countInStock && images && image){
+        event.preventDefault();
+        document.getElementById("add-product-form").disabled = false;
+      }
+     
       
       const isFeaturedElement = document.getElementById('isFeatured');
       let isFeatured = false;
@@ -333,6 +577,7 @@ function setupDeleteButtonListeners() {
         isFeatured = true;
       }
 
+   
      
      
       
@@ -360,7 +605,7 @@ function setupDeleteButtonListeners() {
         } else {
           // Handle failure
           console.log(response);
-          console.error('Failed to add product');
+          document.getElementById("form-message").textContent = 'Failed to add product';
         }
       } catch (error) {
         console.error(error);

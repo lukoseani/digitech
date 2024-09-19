@@ -9,17 +9,14 @@
     justify-content: center;
     flex-direction: column;
 }
-.img-container {
-    margin-bottom: 10px;
-}
-.cropped-container {
-    width: 400px;
-    margin: auto;
-    text-align: center;
+
+.cropped-container,.cropped-containers {
+    margin: 20px;
+    align-items: center;
     justify-content: center;
     background-color: ghostwhite;
-    padding: 20px 20px;
-    display: none;
+    padding: 20px;
+    display:none;
     margin-top: 10px;
 }
 #btn-crop,.btn-crop {
@@ -62,10 +59,12 @@
     box-shadow: none;
     transform: translateY(0);
 }
-#output {
-    margin: 0 5px;
-    display: block;
+#output,.outputs {
+    margin: 10px;
+    display: flex;
     max-width: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
 #mycanvas{

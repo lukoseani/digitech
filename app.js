@@ -84,6 +84,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net","https://www.paypal.com"],
     },
   },
+  
 }));
 
 
@@ -107,3 +108,4 @@ app.listen(port,()=>{
   
   console.log(`App is running at port ${port}`);
 })
+export default app;

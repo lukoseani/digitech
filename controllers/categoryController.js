@@ -5,6 +5,8 @@ const categoryView = async(req,res)=>{
   if(!category){
     res.status(500).json({success:false});
   }
+
+  console.log(category);
   res.render("categories.ejs",{data:category});
 
 }

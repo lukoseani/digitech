@@ -56,7 +56,7 @@ const adminHomeView = async(req, res) => {
   const totalSales = await Cart.aggregate([
     {$group:{_id:null,totalsales:{$sum:'$totalPrice'}}}
   ])
-  const total = totalSales.pop().totalsales;
+  const total = totalSales?.pop().totalsales;
   
   const dailySale = await Cart.aggregate([
     {
@@ -92,7 +92,8 @@ const adminHomeView = async(req, res) => {
   console.log(`yearlySales is ${yearlySales}`);
 
 
-  res.render('admin-home.ejs',{totalsales:total,dailySales:dailySales,weeklySales:weeklySales,yearlySales:yearlySales});
+
+res.render('admin-home.ejs',{totalsales:total,dailySales:dailySales,weeklySales:weeklySales,yearlySales:yearlySales});
 }
 
 //user login view

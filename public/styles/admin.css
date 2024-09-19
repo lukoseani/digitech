@@ -143,4 +143,9 @@ body{
 margin-top:12px;
 margin-bottom:12px;
 }
-
+.img-display-container,.imgs-display-container{
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

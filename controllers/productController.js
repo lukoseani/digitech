@@ -59,7 +59,7 @@ const updateProductView = async(req,res)=>{
 
 const addProduct = async(req,res)=>{
     
-    
+  console.log("hit server side");
   
   const category = await Category.findById(req.body.category);
   
@@ -113,8 +113,10 @@ if(files){
 
 product = await product.save();
 if(!product){
+  console.log("can't add product");
 res.status(500).json({success:false,message: "cannot add the data"});
 }
+console.log("item has been added");
 res.status(200).json({message:"item has been added"});
 }
 
